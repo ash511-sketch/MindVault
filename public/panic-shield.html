@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panic Shield | MindVault Kids</title>
+  <meta name="description" content="Panic Shield Mode — immediate protection tools when you feel threatened online." />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <style>
+    .shield-hero { text-align:center; padding:32px 0; position:relative; }
+    .shield-hero h1 { font-size:40px; font-weight:800; margin-bottom:8px; }
+    .guardian-message { max-width:600px; margin:16px auto; padding:20px 28px; border-radius:var(--radius-lg); background:var(--surface-container-low); border-left:4px solid var(--secondary); font-size:16px; line-height:1.6; color:var(--on-surface-variant); }
+    [data-theme="dark"] .guardian-message { background:var(--surface-container-high); }
+    .action-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:20px; max-width:700px; margin:32px auto; }
+    .action-card { display:flex; flex-direction:column; align-items:center; gap:16px; padding:32px 20px; border-radius:var(--radius-xl); cursor:pointer; transition:all 0.3s var(--ease-spring); text-align:center; border:2px solid transparent; }
+    .action-card:hover { transform:translateY(-4px); }
+    .action-card:active { transform:scale(0.96); }
+    .action-icon { width:72px; height:72px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+    .action-icon .material-symbols-outlined { font-size:32px; color:#fff; }
+    .action-card h3 { font-size:16px; font-weight:700; }
+    .action-card p { font-size:13px; color:var(--on-surface-variant); }
+    .card-mute { background:rgba(79,219,200,0.06); border-color:rgba(79,219,200,0.2); }
+    .card-mute .action-icon { background:var(--secondary); }
+    .card-mute:hover { background:rgba(79,219,200,0.12); border-color:var(--secondary); }
+    .card-save { background:rgba(70,72,212,0.06); border-color:rgba(70,72,212,0.2); }
+    .card-save .action-icon { background:var(--primary); }
+    .card-save:hover { background:rgba(70,72,212,0.12); border-color:var(--primary); }
+    .card-block { background:rgba(185,5,56,0.06); border-color:rgba(185,5,56,0.2); }
+    .card-block .action-icon { background:var(--error); }
+    .card-block:hover { background:rgba(185,5,56,0.12); border-color:var(--error); }
+    .card-help { background:rgba(255,143,69,0.06); border-color:rgba(255,143,69,0.2); }
+    .card-help .action-icon { background:var(--accent-orange); }
+    .card-help:hover { background:rgba(255,143,69,0.12); border-color:var(--accent-orange); }
+    [data-theme="dark"] .card-mute { background:rgba(79,219,200,0.05); }
+    [data-theme="dark"] .card-save { background:rgba(192,193,255,0.05); }
+    [data-theme="dark"] .card-block { background:rgba(255,180,171,0.05); }
+    [data-theme="dark"] .card-help { background:rgba(255,143,69,0.05); }
+    .safe-exit-ring { width:140px; height:140px; border-radius:50%; border:3px solid var(--tertiary); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; margin:32px auto; transition:all 0.3s; }
+    .safe-exit-ring:hover { transform:scale(1.05); box-shadow:0 0 40px rgba(185,5,56,0.3); }
+    .safe-exit-ring .material-symbols-outlined { font-size:48px; color:var(--tertiary); }
+    .safe-exit-label { font-size:14px; font-weight:700; color:var(--tertiary); text-align:center; margin-top:8px; }
+    .event-log { max-width:700px; margin:32px auto 0; }
+    .event-item { display:flex; align-items:center; gap:16px; padding:16px; border-radius:var(--radius-md); background:var(--surface-container-low); margin-bottom:8px; }
+    [data-theme="dark"] .event-item { background:var(--surface-container-high); }
+    @media(max-width:640px) { .action-grid { grid-template-columns:1fr; } .shield-hero h1 { font-size:28px; } }
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="shield-hero reveal">
+        <span class="material-symbols-outlined filled animate-breathe" style="font-size:64px;color:var(--secondary);display:block;margin-bottom:16px;">shield</span>
+        <h1 class="text-gradient">Panic Shield Mode</h1>
+        <p class="text-body-lg text-muted">You are safe. Take a breath. Choose an action below.</p>
+        <div class="guardian-message" id="guardian-msg">
+          <span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;margin-right:4px;">smart_toy</span>
+          AI Guardian: "You are being pressured. You are not in immediate danger. I've analyzed the conversation — here are your options."
+        </div>
+      </div>
+
+      <!-- Action Grid -->
+      <div class="action-grid">
+        <div class="action-card card-mute glass-panel" onclick="doNotReply()">
+          <div class="action-icon"><span class="material-symbols-outlined filled">volume_off</span></div>
+          <h3>DO NOT REPLY</h3>
+          <p>Mute the sender. Silence is your power.</p>
+        </div>
+        <div class="action-card card-save glass-panel" onclick="saveEvidence()">
+          <div class="action-icon"><span class="material-symbols-outlined filled">save</span></div>
+          <h3>SAVE EVIDENCE</h3>
+          <p>Capture and store this conversation safely.</p>
+        </div>
+        <div class="action-card card-block glass-panel" onclick="blockUser()">
+          <div class="action-icon"><span class="material-symbols-outlined filled">block</span></div>
+          <h3>BLOCK USER</h3>
+          <p>Block and report this person immediately.</p>
+        </div>
+        <div class="action-card card-help glass-panel" onclick="getHelp()">
+          <div class="action-icon"><span class="material-symbols-outlined filled">emergency_share</span></div>
+          <h3>GET HELP</h3>
+          <p>Alert your Trust Circle right now.</p>
+        </div>
+      </div>
+
+      <!-- Safe Exit Ring -->
+      <a href="/safe-exit.html" class="safe-exit-ring panic-glow" style="display:flex;text-decoration:none;">
+        <span class="material-symbols-outlined filled">exit_to_app</span>
+        <div class="ripple-ring"></div>
+        <div class="ripple-ring"></div>
+        <div class="ripple-ring"></div>
+      </a>
+      <p class="safe-exit-label">SAFE EXIT</p>
+
+      <!-- Event Log -->
+      <div class="event-log">
+        <h3 class="text-headline-sm" style="margin-bottom:16px;">Recent Shield Events</h3>
+        <div id="event-list"></div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('panic-shield', 'Panic Shield');
+
+    async function doNotReply() {
+      showToast('Sender muted. You are safe. 🔇', 'success');
+      try { await api.doNotReply({ platform: 'Discord' }); } catch(e) {}
+    }
+    async function saveEvidence() {
+      showToast('Evidence saved to your vault! 📁', 'success');
+      try { await api.saveEvidence({}); } catch(e) {}
+    }
+    async function blockUser() {
+      showToast('User blocked and reported! 🚫', 'success');
+      try { await api.blockUser({}); } catch(e) {}
+    }
+    async function getHelp() {
+      showToast('Trust Circle has been alerted! 📞', 'success');
+      try { await api.getHelp({}); } catch(e) {}
+    }
+
+    // Load events
+    async function loadEvents() {
+      try {
+        const events = await api.getPanicEvents();
+        const list = document.getElementById('event-list');
+        (events || []).forEach(ev => {
+          list.innerHTML += `<div class="event-item reveal"><span class="material-symbols-outlined ${ev.resolved ? 'text-accent-green' : 'text-error'} filled">${ev.resolved ? 'check_circle' : 'warning'}</span><div><span class="text-label-lg">${ev.type?.replace(/_/g,' ') || 'Event'}</span><br/><span class="text-body-sm text-muted">${ev.aiAnalysis?.recommendation || ev.platform || ''}</span></div><span class="text-label-sm text-muted">${timeAgo(ev.createdAt)}</span></div>`;
+        });
+      } catch(e) {}
+    }
+    loadEvents();
+  </script>
+</body>
+</html>

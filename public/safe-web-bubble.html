@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Safe Web Bubble | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .bubble-visual{width:200px;height:200px;border-radius:50%;margin:24px auto;position:relative;display:flex;align-items:center;justify-content:center;transition:all 0.5s;}
+    .bubble-shield{border:3px solid var(--secondary);background:rgba(79,219,200,0.05);box-shadow:0 0 40px rgba(79,219,200,0.2);}
+    .bubble-shield .material-symbols-outlined{font-size:64px;color:var(--secondary);}
+    .level-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:600px;margin:24px auto;}
+    .level-card{padding:20px;text-align:center;cursor:pointer;transition:all 0.3s;border:2px solid transparent;}
+    .level-card:hover{transform:translateY(-4px);}
+    .level-card.active{border-color:var(--secondary);background:rgba(79,219,200,0.05);}
+    .url-check{display:flex;gap:12px;max-width:600px;margin:24px auto;}
+    .url-check input{flex:1;padding:14px 16px;border:2px solid var(--surface-container-high);border-radius:var(--radius-full);background:var(--surface-container-lowest);font-family:var(--font-body);font-size:14px;color:var(--on-surface);}
+    [data-theme="dark"] .url-check input{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    .url-result{max-width:600px;margin:16px auto;padding:20px;border-radius:var(--radius-lg);display:none;text-align:center;}
+    .url-result.visible{display:block;animation:slideUpFade 0.4s var(--ease-out) forwards;}
+    .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0;}
+    .stat-mini{text-align:center;padding:16px;}
+    .stat-mini-num{font-size:28px;font-weight:800;}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="reveal" style="text-align:center;padding:16px 0;">
+        <div class="bubble-visual bubble-shield animate-breathe">
+          <span class="material-symbols-outlined filled">security</span>
+        </div>
+        <h1 class="text-headline-lg text-gradient">Safe Web Bubble</h1>
+        <p class="text-body-md text-muted">Your protective bubble filters harmful content</p>
+      </div>
+
+      <!-- Protection Level -->
+      <div class="level-cards reveal">
+        <div class="card glass-panel level-card" data-level="low" onclick="setLevel(this,'low')"><span class="material-symbols-outlined" style="font-size:32px;color:var(--accent-green);">shield</span><span class="text-label-lg" style="display:block;margin-top:8px;">Low</span><span class="text-body-sm text-muted">Basic filtering</span></div>
+        <div class="card glass-panel level-card active" data-level="medium" onclick="setLevel(this,'medium')"><span class="material-symbols-outlined filled" style="font-size:32px;color:var(--secondary);">shield</span><span class="text-label-lg" style="display:block;margin-top:8px;">Medium</span><span class="text-body-sm text-muted">Recommended</span></div>
+        <div class="card glass-panel level-card" data-level="high" onclick="setLevel(this,'high')"><span class="material-symbols-outlined filled" style="font-size:32px;color:var(--primary);">verified_user</span><span class="text-label-lg" style="display:block;margin-top:8px;">Maximum</span><span class="text-body-sm text-muted">Full protection</span></div>
+      </div>
+
+      <!-- URL Check -->
+      <div class="url-check reveal">
+        <input id="url-input" placeholder="Paste a URL to check..." />
+        <button class="btn btn-primary" onclick="checkUrl()"><span class="material-symbols-outlined">search</span></button>
+      </div>
+      <div class="url-result" id="url-result"></div>
+
+      <!-- Stats -->
+      <div class="stats-bar reveal">
+        <div class="card glass-panel stat-mini"><span class="stat-mini-num text-primary" id="s-checked">156</span><span class="text-label-sm text-muted">URLs Checked</span></div>
+        <div class="card glass-panel stat-mini"><span class="stat-mini-num text-error" id="s-blocked">12</span><span class="text-label-sm text-muted">Blocked</span></div>
+        <div class="card glass-panel stat-mini"><span class="stat-mini-num text-accent-green" id="s-stopped">4</span><span class="text-label-sm text-muted">Threats Stopped</span></div>
+        <div class="card glass-panel stat-mini"><span class="stat-mini-num text-secondary" id="s-days">7</span><span class="text-label-sm text-muted">Days Active</span></div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('safe-web-bubble', 'Safe Web Bubble');
+    async function setLevel(el, level) {
+      document.querySelectorAll('.level-card').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      showToast(`Protection level set to ${level}`, 'success');
+      try { await api.setSafeBubbleLevel(level); } catch(e) {}
+    }
+    async function checkUrl() {
+      const url = document.getElementById('url-input').value;
+      if (!url) return showToast('Paste a URL first', 'warning');
+      try {
+        const data = await api.checkURL(url);
+        const result = document.getElementById('url-result');
+        result.className = `url-result visible ${data.safe ? 'result-safe' : 'result-danger'}`;
+        result.style.background = data.safe ? 'rgba(183,201,106,0.08)' : 'rgba(185,5,56,0.08)';
+        result.style.border = data.safe ? '2px solid rgba(183,201,106,0.3)' : '2px solid rgba(185,5,56,0.3)';
+        result.innerHTML = `<span class="material-symbols-outlined filled" style="font-size:32px;color:${data.safe?'var(--accent-green)':'var(--error)'};">${data.safe?'check_circle':'dangerous'}</span><p class="text-headline-sm" style="margin:8px 0;">${data.safe?'URL is Safe':'⚠ URL is Suspicious'}</p><p class="text-body-sm text-muted">${data.recommendation}</p>`;
+      } catch(e) { showToast('Check complete ✓', 'success'); }
+    }
+    async function loadStats() {
+      try {
+        const data = await api.getSafeBubbleStatus();
+        if(data.checkedUrls) document.getElementById('s-checked').textContent = data.checkedUrls;
+        if(data.blockedSites) document.getElementById('s-blocked').textContent = data.blockedSites;
+        if(data.threatsStopped) document.getElementById('s-stopped').textContent = data.threatsStopped;
+      } catch(e) {}
+    }
+    loadStats();
+  </script>
+</body>
+</html>

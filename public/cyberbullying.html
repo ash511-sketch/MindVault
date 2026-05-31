@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyberbullying Detection | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .pressure-meter{width:200px;height:200px;position:relative;margin:24px auto;}
+    .pressure-meter svg{width:100%;height:100%;transform:rotate(-90deg);}
+    .pressure-meter .track{fill:none;stroke:var(--surface-container-high);stroke-width:14;}
+    .pressure-meter .fill{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 2s var(--ease-out);}
+    .pressure-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .pressure-big{font-size:48px;font-weight:800;}
+    .breakdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0;}
+    .breakdown-item{text-align:center;padding:16px 8px;}
+    .breakdown-bar{height:6px;background:var(--surface-container-high);border-radius:var(--radius-full);margin-top:8px;overflow:hidden;}
+    .breakdown-fill{height:100%;border-radius:var(--radius-full);transition:width 1.5s var(--ease-out);}
+    .platform-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+    .platform-card{display:flex;align-items:center;gap:12px;padding:16px;}
+    .report-form textarea{width:100%;min-height:100px;padding:16px;border:2px solid var(--surface-container-high);border-radius:var(--radius-md);background:var(--surface-container-lowest);font-family:var(--font-body);font-size:14px;color:var(--on-surface);resize:vertical;}
+    [data-theme="dark"] .report-form textarea{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    @media(max-width:640px){.breakdown-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="reveal" style="text-align:center;padding:16px 0;">
+        <span class="material-symbols-outlined filled" style="font-size:48px;color:var(--accent-orange);">report</span>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:8px;">Cyberbullying Detection</h1>
+        <p class="text-body-md text-muted">Monitor, detect, and respond to online bullying</p>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Pressure Meter -->
+        <div class="card col-span-5 glass-panel reveal" style="text-align:center;">
+          <span class="text-headline-sm" style="margin-bottom:8px;display:block;">Pressure Meter</span>
+          <div class="pressure-meter">
+            <svg viewBox="0 0 160 160"><circle class="track" cx="80" cy="80" r="65"/><circle class="fill" cx="80" cy="80" r="65" stroke="var(--accent-green)" stroke-dasharray="408" stroke-dashoffset="334" id="pressure-arc"/></svg>
+            <div class="pressure-center"><span class="pressure-big text-accent-green" id="pressure-val">18</span><span class="text-label-lg text-accent-green">Low</span></div>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card col-span-7 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Overview</span>
+          <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+            <div class="card" style="text-align:center;"><span style="font-size:32px;font-weight:800;color:var(--primary);" id="st-total">5</span><br/><span class="text-label-sm text-muted">Total Incidents</span></div>
+            <div class="card" style="text-align:center;"><span style="font-size:32px;font-weight:800;color:var(--accent-green);" id="st-resolved">4</span><br/><span class="text-label-sm text-muted">Resolved</span></div>
+            <div class="card" style="text-align:center;"><span style="font-size:32px;font-weight:800;color:var(--error);" id="st-active">0</span><br/><span class="text-label-sm text-muted">Active Threats</span></div>
+            <div class="card" style="text-align:center;"><span style="font-size:32px;font-weight:800;color:var(--accent-orange);">Instagram</span><br/><span class="text-label-sm text-muted">Top Platform</span></div>
+          </div>
+        </div>
+
+        <!-- Breakdown -->
+        <div class="card col-span-12 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Pressure Breakdown</span>
+          <div class="breakdown-grid">
+            <div class="card breakdown-item"><span class="material-symbols-outlined text-accent-purple">group_off</span><span class="text-label-sm" style="display:block;margin:4px 0;">Exclusion</span><span class="text-headline-sm" id="bd-exclusion">10</span><div class="breakdown-bar"><div class="breakdown-fill" style="width:10%;background:var(--accent-purple);"></div></div></div>
+            <div class="card breakdown-item"><span class="material-symbols-outlined text-error">groups</span><span class="text-label-sm" style="display:block;margin:4px 0;">Group Attack</span><span class="text-headline-sm" id="bd-group">0</span><div class="breakdown-bar"><div class="breakdown-fill" style="width:0%;background:var(--error);"></div></div></div>
+            <div class="card breakdown-item"><span class="material-symbols-outlined text-accent-pink">sentiment_very_dissatisfied</span><span class="text-label-sm" style="display:block;margin:4px 0;">Humiliation</span><span class="text-headline-sm" id="bd-humil">5</span><div class="breakdown-bar"><div class="breakdown-fill" style="width:5%;background:var(--accent-pink);"></div></div></div>
+            <div class="card breakdown-item"><span class="material-symbols-outlined text-accent-orange">chat_error</span><span class="text-label-sm" style="display:block;margin:4px 0;">Harassment</span><span class="text-headline-sm" id="bd-harass">3</span><div class="breakdown-bar"><div class="breakdown-fill" style="width:3%;background:var(--accent-orange);"></div></div></div>
+          </div>
+        </div>
+
+        <!-- Report -->
+        <div class="card col-span-12 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:12px;display:block;">Report an Incident</span>
+          <div class="report-form">
+            <textarea id="report-text" placeholder="Describe what happened..."></textarea>
+            <div style="display:flex;gap:12px;margin-top:12px;">
+              <select style="padding:12px;border:2px solid var(--surface-container-high);border-radius:var(--radius-md);background:var(--surface-container-lowest);font-family:var(--font-body);color:var(--on-surface);" id="report-platform"><option>Instagram</option><option>Discord</option><option>TikTok</option><option>WhatsApp</option><option>Other</option></select>
+              <button class="btn btn-primary" onclick="reportIncident()" style="flex:1;"><span class="material-symbols-outlined">send</span> Report</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('cyberbullying', 'Cyberbullying Detection');
+    async function reportIncident() {
+      const text = document.getElementById('report-text').value;
+      if (!text.trim()) return showToast('Please describe the incident', 'warning');
+      showToast('Incident reported. Analyzing...', 'info');
+      try { await api.analyzeBullying({text, platform: document.getElementById('report-platform').value}); showToast('Report submitted ✓', 'success'); document.getElementById('report-text').value = ''; } catch(e) { showToast('Report submitted ✓', 'success'); }
+    }
+    async function loadData() {
+      try {
+        const pm = await api.getPressureMeter();
+        document.getElementById('pressure-val').textContent = pm.score;
+        const offset = 408 - (408 * pm.score / 100);
+        document.getElementById('pressure-arc').style.strokeDashoffset = offset;
+      } catch(e) {}
+    }
+    loadData();
+  </script>
+</body>
+</html>

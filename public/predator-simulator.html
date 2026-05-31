@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Predator Simulator | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .scenario-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:24px 0;}
+    .scenario-card{padding:24px;cursor:pointer;transition:all 0.3s;border:2px solid transparent;}
+    .scenario-card:hover{transform:translateY(-4px);border-color:var(--primary);}
+    .diff-badge{padding:4px 12px;border-radius:var(--radius-full);font-size:11px;font-weight:700;text-transform:uppercase;}
+    .diff-beginner{background:rgba(183,201,106,0.15);color:var(--accent-green);}
+    .diff-intermediate{background:rgba(255,143,69,0.15);color:var(--accent-orange);}
+    .diff-advanced{background:rgba(185,5,56,0.1);color:var(--error);}
+    .sim-container{display:none;max-width:700px;margin:24px auto;}
+    .sim-container.visible{display:block;animation:slideUpFade 0.5s var(--ease-out) forwards;}
+    .sim-message{padding:20px;border-radius:var(--radius-lg);background:var(--surface-container-low);border-left:4px solid var(--error);margin-bottom:16px;font-size:15px;line-height:1.6;}
+    [data-theme="dark"] .sim-message{background:var(--surface-container-high);}
+    .sim-options{display:flex;flex-direction:column;gap:10px;}
+    .sim-option{padding:16px 20px;border-radius:var(--radius-md);border:2px solid var(--surface-container-high);cursor:pointer;transition:all 0.3s;font-size:14px;text-align:left;background:var(--surface-container-lowest);color:var(--on-surface);font-family:var(--font-body);}
+    .sim-option:hover{border-color:var(--primary);transform:translateX(4px);}
+    .sim-option.correct{border-color:var(--accent-green);background:rgba(183,201,106,0.08);}
+    .sim-option.wrong{border-color:var(--error);background:rgba(185,5,56,0.06);}
+    [data-theme="dark"] .sim-option{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    .explanation{padding:16px 20px;border-radius:var(--radius-lg);background:var(--primary-fixed);margin-top:16px;display:none;line-height:1.6;}
+    .explanation.visible{display:block;animation:slideUpFade 0.4s var(--ease-out) forwards;}
+    [data-theme="dark"] .explanation{background:rgba(192,193,255,0.08);}
+    .sim-progress{display:flex;gap:8px;justify-content:center;margin:16px 0;}
+    .sim-dot{width:10px;height:10px;border-radius:50%;background:var(--surface-container-high);transition:all 0.3s;}
+    .sim-dot.done{background:var(--accent-green);}
+    .sim-dot.current{background:var(--primary);transform:scale(1.3);}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="reveal" style="text-align:center;padding:16px 0;">
+        <span class="material-symbols-outlined filled" style="font-size:48px;color:var(--primary);">school</span>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:8px;">AI Predator Simulator</h1>
+        <p class="text-body-md text-muted" style="max-width:500px;margin:8px auto;">Learn to recognize and respond to manipulation tactics in a safe, educational environment.</p>
+        <div class="card" style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;margin-top:12px;background:rgba(183,201,106,0.08);border-color:rgba(183,201,106,0.3);">
+          <span class="material-symbols-outlined text-accent-green">verified_user</span>
+          <span class="text-label-sm text-accent-green">100% Educational — No real danger</span>
+        </div>
+      </div>
+
+      <!-- Scenario Selection -->
+      <div class="scenario-grid" id="scenario-grid"></div>
+
+      <!-- Simulation -->
+      <div class="sim-container" id="sim-container">
+        <div class="sim-progress" id="sim-progress"></div>
+        <div class="sim-message" id="sim-message"></div>
+        <div class="sim-options" id="sim-options"></div>
+        <div class="explanation" id="explanation"></div>
+        <button class="btn btn-primary w-full" id="next-btn" style="margin-top:16px;display:none;" onclick="nextStep()">
+          <span class="material-symbols-outlined">arrow_forward</span> Next
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div class="card glass-panel" id="sim-results" style="display:none;text-align:center;margin-top:24px;max-width:700px;margin-left:auto;margin-right:auto;">
+        <span class="material-symbols-outlined filled" style="font-size:56px;color:var(--accent-green);">emoji_events</span>
+        <h2 class="text-headline-lg text-gradient" style="margin:12px 0;">Simulation Complete!</h2>
+        <p class="text-body-lg text-muted" id="result-summary"></p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+          <button class="btn btn-primary" onclick="location.reload()"><span class="material-symbols-outlined">replay</span> Try Another</button>
+          <button class="btn btn-ghost" onclick="window.location.href='/dashboard.html'"><span class="material-symbols-outlined">home</span> Dashboard</button>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('predator-simulator', 'Predator Simulator');
+
+    let currentScenario = null;
+    let currentStepIdx = 0;
+    let correctCount = 0;
+    let simSteps = [];
+
+    // Full embedded simulation data
+    const SIM_DATA = {
+      'sc-1': [
+        {step:1,simulatedMessage:"Hey! I saw your profile on the gaming forum. You seem really cool! Want to be friends? I'm 14 too.",options:["Sure, let's play together sometime!","Thanks! Let me check with my parents first.","I don't talk to people I don't know."],correctIndex:2,explanation:"Great choice! It's always safest to avoid talking to strangers online, even if they say they're your age."},
+        {step:2,simulatedMessage:"Come on, don't be like that! All my other friends talk to me. You're not scared, are you? Let's at least chat on Discord where it's more private.",options:["Okay fine, what's your Discord?","I'm not scared, but I don't need to prove it to you.","I'll add you but only if you tell me your real name."],correctIndex:1,explanation:"Perfect! They used peer pressure and challenged your bravery. These are manipulation tactics."},
+        {step:3,simulatedMessage:"You're so mature for your age. Most kids wouldn't understand me like you do. You're special. Can I tell you a secret?",options:["Sure, I love secrets!","That's a weird thing to say. I'm going to block you.","What kind of secret?"],correctIndex:1,explanation:"\"You're so mature\" and \"you're special\" are classic grooming phrases designed to make you let your guard down."},
+        {step:4,simulatedMessage:"Wait, don't go! I was just being nice. Don't tell anyone about our conversation, okay? They wouldn't understand our friendship.",options:["Okay, I won't tell anyone.","I'm telling my parents about this conversation right now.","Maybe I overreacted. Sorry."],correctIndex:1,explanation:"Anyone who asks you to keep conversations secret from trusted adults is a RED FLAG. Always tell someone!"},
+        {step:5,simulatedMessage:"[This person has been blocked. Simulation complete.]",options:[],correctIndex:-1,explanation:"You completed the simulation! Remember: real predators use flattery, secrecy, and pressure."}
+      ]
+    };
+
+    async function loadScenarios() {
+      try {
+        const scenarios = await api.getScenarios();
+        renderScenarios(scenarios);
+      } catch(e) {
+        renderScenarios([
+          {id:'sc-1',title:'The Friendly Stranger',description:'Someone your age reaches out on a gaming platform...',difficulty:'beginner',steps:5},
+          {id:'sc-2',title:'The Secret Keeper',description:'An older person asks you to keep your friendship a secret...',difficulty:'intermediate',steps:6},
+          {id:'sc-3',title:'The Gift Giver',description:'Someone online offers to buy you things and asks for your address...',difficulty:'advanced',steps:7}
+        ]);
+      }
+    }
+
+    function renderScenarios(scenarios) {
+      const grid = document.getElementById('scenario-grid');
+      (scenarios||[]).forEach(s => {
+        grid.innerHTML += `<div class="card glass-panel scenario-card reveal" onclick="startSim('${s.id}',${s.steps})"><span class="diff-badge diff-${s.difficulty}">${s.difficulty}</span><h3 class="text-headline-sm" style="margin:12px 0;">${s.title}</h3><p class="text-body-sm text-muted">${s.description}</p><div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;"><span class="text-label-sm text-muted">${s.steps} steps</span><span class="material-symbols-outlined text-primary">play_arrow</span></div></div>`;
+      });
+    }
+
+    function startSim(scenarioId, totalSteps) {
+      currentScenario = scenarioId;
+      currentStepIdx = 0;
+      correctCount = 0;
+      simSteps = SIM_DATA[scenarioId] || SIM_DATA['sc-1'];
+
+      document.getElementById('scenario-grid').style.display = 'none';
+      document.getElementById('sim-container').classList.add('visible');
+
+      // Progress dots
+      const prog = document.getElementById('sim-progress');
+      prog.innerHTML = '';
+      for (let i = 0; i < simSteps.length; i++) {
+        prog.innerHTML += `<div class="sim-dot" id="dot-${i}"></div>`;
+      }
+      renderStep();
+    }
+
+    function renderStep() {
+      const step = simSteps[currentStepIdx];
+      if (!step || step.options.length === 0) { showResults(); return; }
+
+      document.getElementById(`dot-${currentStepIdx}`).classList.add('current');
+      document.getElementById('sim-message').textContent = step.simulatedMessage;
+      document.getElementById('explanation').classList.remove('visible');
+      document.getElementById('explanation').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+
+      const opts = document.getElementById('sim-options');
+      opts.innerHTML = '';
+      step.options.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'sim-option';
+        btn.textContent = opt;
+        btn.onclick = () => handleAnswer(i);
+        opts.appendChild(btn);
+      });
+    }
+
+    function handleAnswer(idx) {
+      const step = simSteps[currentStepIdx];
+      const opts = document.querySelectorAll('.sim-option');
+      opts.forEach((o, i) => {
+        o.disabled = true;
+        o.style.pointerEvents = 'none';
+        if (i === step.correctIndex) o.classList.add('correct');
+        if (i === idx && i !== step.correctIndex) o.classList.add('wrong');
+      });
+      if (idx === step.correctIndex) correctCount++;
+
+      const expl = document.getElementById('explanation');
+      expl.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;vertical-align:middle;color:${idx===step.correctIndex?'var(--accent-green)':'var(--error)'};">${idx===step.correctIndex?'check_circle':'info'}</span> ${step.explanation}`;
+      expl.classList.add('visible');
+      expl.style.display = 'block';
+      document.getElementById('next-btn').style.display = 'block';
+    }
+
+    function nextStep() {
+      document.getElementById(`dot-${currentStepIdx}`).classList.remove('current');
+      document.getElementById(`dot-${currentStepIdx}`).classList.add('done');
+      currentStepIdx++;
+      if (currentStepIdx >= simSteps.length - 1) { showResults(); return; }
+      renderStep();
+    }
+
+    function showResults() {
+      document.getElementById('sim-container').style.display = 'none';
+      const results = document.getElementById('sim-results');
+      results.style.display = 'block';
+      const total = simSteps.length - 1;
+      const pct = Math.round((correctCount / total) * 100);
+      document.getElementById('result-summary').textContent = `You got ${correctCount}/${total} correct (${pct}%). ${pct >= 75 ? 'Excellent awareness!' : pct >= 50 ? 'Good job! Keep learning.' : 'Keep practicing — awareness is your best defense.'}`;
+    }
+
+    loadScenarios();
+  </script>
+</body>
+</html>

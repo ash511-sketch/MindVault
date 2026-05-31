@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MindVault Kids - Redirecting...</title>
+  <script>
+    // Redirect to dashboard if already logged in, otherwise login page
+    document.addEventListener("DOMContentLoaded", function() {
+      const user = localStorage.getItem('mv-user');
+      if (user) {
+        window.location.href = '/dashboard.html';
+      } else {
+        window.location.href = '/login.html';
+      }
+    });
+  </script>
+</head>
+<body>
+  <p>Redirecting to secure portal...</p>
+</body>
+</html>

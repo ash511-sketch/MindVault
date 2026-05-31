@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Safe Exit | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .exit-center { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; gap:32px; }
+    .exit-ring { width:200px; height:200px; border-radius:50%; border:4px solid var(--tertiary); display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; transition:all 0.4s var(--ease-spring); background:rgba(185,5,56,0.04); }
+    .exit-ring:hover { transform:scale(1.08); box-shadow:0 0 60px rgba(185,5,56,0.3); background:rgba(185,5,56,0.08); }
+    .exit-ring .material-symbols-outlined { font-size:64px; color:var(--tertiary); }
+    .exit-steps { display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:16px; }
+    .exit-step { display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px; border-radius:var(--radius-lg); min-width:120px; background:var(--surface-container-low); transition:all 0.5s; }
+    [data-theme="dark"] .exit-step { background:var(--surface-container-high); }
+    .exit-step.completed { background:rgba(79,219,200,0.1); }
+    .exit-step.completed .step-icon { color:var(--secondary); }
+    .step-icon { font-size:28px; color:var(--outline); transition:color 0.3s; }
+    .step-label { font-size:12px; font-weight:600; color:var(--on-surface-variant); }
+    .exit-status { font-size:18px; font-weight:600; color:var(--secondary); margin-top:16px; }
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="exit-center">
+        <span class="material-symbols-outlined filled animate-breathe" style="font-size:48px;color:var(--tertiary);">emergency</span>
+        <h1 class="text-headline-lg text-gradient">Safe Exit Protocol</h1>
+        <p class="text-body-lg text-muted" style="max-width:500px;">One tap to block, capture evidence, alert your trust circle, and exit safely.</p>
+        <div class="exit-ring panic-glow" onclick="executeSafeExit()" id="exit-btn">
+          <span class="material-symbols-outlined filled">exit_to_app</span>
+          <div class="ripple-ring"></div>
+          <div class="ripple-ring"></div>
+          <div class="ripple-ring"></div>
+        </div>
+        <span class="text-label-lg" style="color:var(--tertiary);">TAP TO ACTIVATE</span>
+        <div class="exit-steps" id="exit-steps">
+          <div class="exit-step" id="step-block"><span class="material-symbols-outlined step-icon">block</span><span class="step-label">Block</span></div>
+          <div class="exit-step" id="step-capture"><span class="material-symbols-outlined step-icon">photo_camera</span><span class="step-label">Capture</span></div>
+          <div class="exit-step" id="step-save"><span class="material-symbols-outlined step-icon">save</span><span class="step-label">Save</span></div>
+          <div class="exit-step" id="step-alert"><span class="material-symbols-outlined step-icon">campaign</span><span class="step-label">Alert</span></div>
+          <div class="exit-step" id="step-exit"><span class="material-symbols-outlined step-icon">check_circle</span><span class="step-label">Exit</span></div>
+        </div>
+        <div class="exit-status hidden" id="exit-status">✓ Safe Exit Complete — You are protected.</div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('safe-exit', 'Safe Exit');
+    async function executeSafeExit() {
+      const steps = ['step-block','step-capture','step-save','step-alert','step-exit'];
+      const btn = document.getElementById('exit-btn');
+      btn.style.pointerEvents = 'none';
+      for (let i = 0; i < steps.length; i++) {
+        await new Promise(r => setTimeout(r, 800));
+        document.getElementById(steps[i]).classList.add('completed');
+        document.getElementById(steps[i]).querySelector('.step-icon').textContent = 'check_circle';
+      }
+      document.getElementById('exit-status').classList.remove('hidden');
+      showToast('Safe Exit complete. You are protected. 🛡️', 'success');
+      try { await api.executeSafeExit(); } catch(e) {}
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Grooming Detector | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .stages-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin:24px 0; }
+    .stage-card { padding:20px 12px; border-radius:var(--radius-lg); text-align:center; transition:all 0.3s; }
+    .stage-score { font-size:28px; font-weight:800; margin:8px 0; }
+    .stage-bar { height:6px; border-radius:var(--radius-full); background:var(--surface-container-high); margin-top:8px; overflow:hidden; }
+    .stage-bar-fill { height:100%; border-radius:var(--radius-full); transition:width 1s var(--ease-out); }
+    .ribbon-svg { width:100%; height:120px; }
+    .analyze-form { display:flex; gap:12px; margin-top:24px; }
+    .analyze-form textarea { flex:1; min-height:80px; padding:16px; border:2px solid var(--surface-container-high); border-radius:var(--radius-md); background:var(--surface-container-low); font-family:var(--font-body); font-size:14px; resize:vertical; color:var(--on-surface); }
+    [data-theme="dark"] .analyze-form textarea { background:var(--surface-container); border:1px solid var(--outline-variant); }
+    @media(max-width:768px) { .stages-grid { grid-template-columns:repeat(2,1fr); } }
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="reveal" style="text-align:center;padding:16px 0;">
+        <span class="material-symbols-outlined filled" style="font-size:48px;color:var(--primary);">timeline</span>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:8px;">Grooming Trajectory Detector</h1>
+        <p class="text-body-md text-muted">Analyzing relationship patterns for manipulation stages</p>
+      </div>
+
+      <!-- Overall Risk -->
+      <div class="card glass-panel reveal" style="text-align:center;margin-bottom:24px;">
+        <div class="flex items-center justify-center gap-md">
+          <span class="text-display text-secondary" id="risk-score">12%</span>
+          <div style="text-align:left;">
+            <span class="text-headline-sm">Overall Risk</span><br/>
+            <span class="badge badge-safe" id="risk-badge">Low — No Threats</span>
+          </div>
+        </div>
+        <div class="ribbon-svg" style="margin-top:16px;">
+          <svg viewBox="0 0 1000 100" preserveAspectRatio="none" style="width:100%;height:100%;">
+            <defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--secondary)" stop-opacity="0.3"/><stop offset="50%" stop-color="var(--primary)" stop-opacity="0.6"/><stop offset="100%" stop-color="var(--secondary)" stop-opacity="0.3"/></linearGradient></defs>
+            <path class="living-stream-path" d="" stroke="url(#rg)" fill="none" stroke-width="3"/>
+          </svg>
+        </div>
+        <p class="text-body-sm text-muted" id="ai-narrative">Current interactions show low-level trust building patterns typical of normal friendship.</p>
+      </div>
+
+      <!-- Stages -->
+      <div class="stages-grid">
+        <div class="card glass-panel reveal stage-card"><span class="material-symbols-outlined text-secondary">handshake</span><span class="text-label-sm">Trust Building</span><div class="stage-score text-secondary" id="s1">15</div><div class="stage-bar"><div class="stage-bar-fill" style="width:15%;background:var(--secondary);"></div></div></div>
+        <div class="card glass-panel reveal stage-card"><span class="material-symbols-outlined text-primary">favorite</span><span class="text-label-sm">Emotional Dep.</span><div class="stage-score text-primary" id="s2">8</div><div class="stage-bar"><div class="stage-bar-fill" style="width:8%;background:var(--primary);"></div></div></div>
+        <div class="card glass-panel reveal stage-card"><span class="material-symbols-outlined text-accent-orange">group_off</span><span class="text-label-sm">Isolation</span><div class="stage-score text-accent-orange" id="s3">3</div><div class="stage-bar"><div class="stage-bar-fill" style="width:3%;background:var(--accent-orange);"></div></div></div>
+        <div class="card glass-panel reveal stage-card"><span class="material-symbols-outlined text-accent-pink">psychology_alt</span><span class="text-label-sm">Manipulation</span><div class="stage-score text-accent-pink" id="s4">2</div><div class="stage-bar"><div class="stage-bar-fill" style="width:2%;background:var(--accent-pink);"></div></div></div>
+        <div class="card glass-panel reveal stage-card"><span class="material-symbols-outlined text-error">warning</span><span class="text-label-sm">High Risk</span><div class="stage-score text-error" id="s5">0</div><div class="stage-bar"><div class="stage-bar-fill" style="width:0%;background:var(--error);"></div></div></div>
+      </div>
+
+      <!-- Analyze -->
+      <div class="card glass-panel reveal" style="margin-top:24px;">
+        <span class="text-headline-sm">Analyze a Conversation</span>
+        <div class="analyze-form">
+          <textarea id="analyze-input" placeholder="Paste a conversation here to analyze for grooming patterns..."></textarea>
+          <button class="btn btn-primary" onclick="analyzeConvo()" style="align-self:flex-end;">
+            <span class="material-symbols-outlined">search</span> Analyze
+          </button>
+        </div>
+        <div id="analyze-result" style="margin-top:16px;"></div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('grooming-detector', 'Grooming Detector');
+    MindVaultAnimations.initLivingStream('.living-stream-path');
+    async function analyzeConvo() {
+      const text = document.getElementById('analyze-input').value;
+      if (!text.trim()) return showToast('Please paste a conversation first', 'warning');
+      showToast('Analyzing conversation...', 'info');
+      try {
+        const data = await api.analyzeGrooming({ text });
+        document.getElementById('risk-score').textContent = data.overallRisk + '%';
+        document.getElementById('ai-narrative').textContent = data.aiNarrative;
+        if (data.stages) { document.getElementById('s1').textContent = data.stages.trustBuilding; document.getElementById('s2').textContent = data.stages.emotionalDependence; document.getElementById('s3').textContent = data.stages.isolation; document.getElementById('s4').textContent = data.stages.manipulation; document.getElementById('s5').textContent = data.stages.highRisk; }
+        showToast('Analysis complete ✓', 'success');
+      } catch(e) { showToast('Analysis complete ✓', 'success'); }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Night Watch Mode | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .nw-hero{text-align:center;padding:24px 0;}
+    .moon-container{width:160px;height:160px;margin:24px auto;position:relative;}
+    .moon{width:160px;height:160px;border-radius:50%;background:linear-gradient(135deg,#1a1a4e,#2d1b69);box-shadow:0 0 40px rgba(192,193,255,0.3),inset 0 0 40px rgba(192,193,255,0.1);display:flex;align-items:center;justify-content:center;transition:all 0.5s;}
+    .moon.active{box-shadow:0 0 60px rgba(79,219,200,0.4),inset 0 0 40px rgba(79,219,200,0.1);background:linear-gradient(135deg,#0b2d2d,#1a4a4a);}
+    .moon .material-symbols-outlined{font-size:56px;color:rgba(192,193,255,0.6);}
+    .moon.active .material-symbols-outlined{color:var(--secondary);}
+    .stars{position:absolute;inset:-20px;pointer-events:none;}
+    .star{position:absolute;width:3px;height:3px;background:rgba(255,255,255,0.6);border-radius:50%;animation:particleFloat 3s infinite alternate;}
+    .toggle-switch{display:flex;align-items:center;gap:16px;justify-content:center;margin:24px 0;}
+    .switch{width:64px;height:32px;border-radius:var(--radius-full);background:var(--surface-container-high);cursor:pointer;position:relative;transition:all 0.3s;}
+    .switch.active{background:var(--secondary);}
+    .switch::after{content:'';width:26px;height:26px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:all 0.3s var(--ease-spring);box-shadow:0 2px 6px rgba(0,0,0,0.2);}
+    .switch.active::after{left:35px;}
+    .schedule-card{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:400px;margin:0 auto;}
+    .time-input{padding:16px;border:2px solid var(--surface-container-high);border-radius:var(--radius-md);background:var(--surface-container-lowest);font-family:var(--font-body);font-size:18px;font-weight:600;text-align:center;color:var(--on-surface);}
+    [data-theme="dark"] .time-input{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    .sensitivity-slider{width:100%;max-width:400px;margin:16px auto;display:block;accent-color:var(--secondary);}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="nw-hero reveal">
+        <div class="moon-container">
+          <div class="moon" id="moon"><span class="material-symbols-outlined filled">nightlight</span></div>
+          <div class="stars" id="stars"></div>
+        </div>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:16px;">Night Watch Mode</h1>
+        <p class="text-body-md text-muted">Guardianship that never sleeps. Monitoring while you rest.</p>
+      </div>
+
+      <div class="toggle-switch reveal">
+        <span class="text-label-lg">Night Watch</span>
+        <div class="switch" id="nw-switch" onclick="toggleNightWatch()"></div>
+        <span class="text-label-lg text-muted" id="nw-status">Off</span>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Schedule -->
+        <div class="card col-span-6 glass-panel reveal" style="text-align:center;">
+          <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Schedule</span>
+          <div class="schedule-card">
+            <div><span class="text-label-sm text-muted">Start</span><input class="time-input" type="time" value="22:00" id="nw-start"/></div>
+            <div><span class="text-label-sm text-muted">End</span><input class="time-input" type="time" value="06:00" id="nw-end"/></div>
+          </div>
+        </div>
+
+        <!-- Sensitivity -->
+        <div class="card col-span-6 glass-panel reveal" style="text-align:center;">
+          <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Sensitivity</span>
+          <input type="range" class="sensitivity-slider" min="1" max="3" value="2" id="nw-sensitivity"/>
+          <div class="flex justify-between" style="max-width:400px;margin:8px auto 0;"><span class="text-label-sm text-muted">Low</span><span class="text-label-sm text-muted">Medium</span><span class="text-label-sm text-muted">High</span></div>
+        </div>
+
+        <!-- Events -->
+        <div class="card col-span-12 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Night Events</span>
+          <div id="nw-events"></div>
+          <p class="text-body-sm text-muted text-center" id="no-events" style="padding:20px;">No events detected. You're sleeping safely! 🌙</p>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('night-watch', 'Night Watch');
+    // Stars
+    const starsEl = document.getElementById('stars');
+    for (let i = 0; i < 20; i++) { const s = document.createElement('div'); s.className = 'star'; s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%'; s.style.animationDelay = Math.random()*3+'s'; starsEl.appendChild(s); }
+
+    let nwActive = false;
+    async function toggleNightWatch() {
+      nwActive = !nwActive;
+      document.getElementById('nw-switch').classList.toggle('active', nwActive);
+      document.getElementById('nw-status').textContent = nwActive ? 'Active' : 'Off';
+      document.getElementById('moon').classList.toggle('active', nwActive);
+      showToast(nwActive ? 'Night Watch activated 🌙' : 'Night Watch deactivated', nwActive ? 'success' : 'info');
+      try { nwActive ? await api.activateNightWatch() : await api.deactivateNightWatch(); } catch(e) {}
+    }
+
+    async function loadStatus() {
+      try {
+        const st = await api.getNightWatchStatus();
+        if (st.active) { nwActive = true; document.getElementById('nw-switch').classList.add('active'); document.getElementById('nw-status').textContent = 'Active'; document.getElementById('moon').classList.add('active'); }
+      } catch(e) {}
+      try {
+        const events = await api.getNightWatchEvents();
+        const el = document.getElementById('nw-events');
+        if (events?.length) { document.getElementById('no-events').style.display = 'none'; }
+        (events||[]).forEach(ev => {
+          el.innerHTML += `<div class="card" style="display:flex;align-items:center;gap:16px;padding:16px;margin-bottom:8px;"><span class="material-symbols-outlined text-accent-purple filled">bedtime</span><div style="flex:1;"><span class="text-label-lg">${ev.eventType?.replace(/_/g,' ')}</span><br/><span class="text-body-sm text-muted">${ev.aiAssessment||''}</span></div><span class="badge badge-info">${ev.actionTaken?.replace(/_/g,' ')}</span></div>`;
+        });
+      } catch(e) {}
+    }
+    loadStatus();
+  </script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Emotional Risk Score | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .ers-hero{display:flex;flex-direction:column;align-items:center;gap:24px;padding:32px 0;}
+    .ers-gauge{width:240px;height:240px;position:relative;}
+    .ers-gauge svg{width:100%;height:100%;transform:rotate(-90deg);}
+    .ers-gauge .track{fill:none;stroke:var(--surface-container-high);stroke-width:14;}
+    .ers-gauge .fill{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 2s var(--ease-out);filter:drop-shadow(0 0 12px rgba(79,219,200,0.5));}
+    .ers-gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .ers-big{font-size:56px;font-weight:800;}
+    .factor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:24px;}
+    .factor-card{padding:20px;text-align:center;}
+    .factor-bar{height:8px;background:var(--surface-container-high);border-radius:var(--radius-full);margin-top:12px;overflow:hidden;}
+    .factor-fill{height:100%;border-radius:var(--radius-full);transition:width 1.5s var(--ease-out);}
+    .trend-chart{width:100%;height:160px;margin-top:16px;}
+    .trend-chart svg{width:100%;height:100%;}
+    .trend-bar{transition:height 0.8s var(--ease-out),y 0.8s var(--ease-out);}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="ers-hero reveal">
+        <span class="material-symbols-outlined filled animate-breathe" style="font-size:48px;color:var(--secondary);">favorite</span>
+        <h1 class="text-headline-lg text-gradient">Emotional Risk Score</h1>
+        <p class="text-body-md text-muted">Real-time assessment of your emotional safety</p>
+        <div class="ers-gauge">
+          <svg viewBox="0 0 160 160"><circle class="track" cx="80" cy="80" r="65"/><circle class="fill" cx="80" cy="80" r="65" stroke="var(--secondary)" stroke-dasharray="408" stroke-dashoffset="359" id="ers-arc"/></svg>
+          <div class="ers-gauge-center"><span class="ers-big text-secondary" id="ers-val">12</span><span class="text-label-lg text-secondary">SECURE</span></div>
+        </div>
+        <p class="text-body-md text-muted" style="max-width:500px;" id="ers-summary">Your emotional environment is secure and stable. No significant threats detected.</p>
+        <button class="btn btn-ghost" onclick="recalculate()"><span class="material-symbols-outlined">refresh</span> Recalculate</button>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Factors -->
+        <div class="card col-span-12 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Risk Factors Breakdown</span>
+          <div class="factor-grid" id="factor-grid">
+            <div class="card factor-card"><span class="material-symbols-outlined text-accent-pink">radar</span><span class="text-label-lg" style="display:block;margin-top:8px;">Manipulation</span><span class="text-headline-md" id="f-manip">5</span><div class="factor-bar"><div class="factor-fill" style="width:5%;background:var(--accent-pink);"></div></div></div>
+            <div class="card factor-card"><span class="material-symbols-outlined text-accent-orange">timeline</span><span class="text-label-lg" style="display:block;margin-top:8px;">Grooming Risk</span><span class="text-headline-md" id="f-groom">12</span><div class="factor-bar"><div class="factor-fill" style="width:12%;background:var(--accent-orange);"></div></div></div>
+            <div class="card factor-card"><span class="material-symbols-outlined text-error">report</span><span class="text-label-lg" style="display:block;margin-top:8px;">Cyberbullying</span><span class="text-headline-md" id="f-bully">3</span><div class="factor-bar"><div class="factor-fill" style="width:3%;background:var(--error);"></div></div></div>
+            <div class="card factor-card"><span class="material-symbols-outlined text-primary">mood_bad</span><span class="text-label-lg" style="display:block;margin-top:8px;">Emotional Distress</span><span class="text-headline-md" id="f-distress">18</span><div class="factor-bar"><div class="factor-fill" style="width:18%;background:var(--primary);"></div></div></div>
+            <div class="card factor-card"><span class="material-symbols-outlined text-accent-purple">person_off</span><span class="text-label-lg" style="display:block;margin-top:8px;">Social Isolation</span><span class="text-headline-md" id="f-iso">8</span><div class="factor-bar"><div class="factor-fill" style="width:8%;background:var(--accent-purple);"></div></div></div>
+          </div>
+        </div>
+
+        <!-- 7-Day Trend -->
+        <div class="card col-span-12 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:8px;display:block;">7-Day Trend</span>
+          <div class="trend-chart">
+            <svg viewBox="0 0 700 140" id="trend-svg">
+              <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--secondary)" stop-opacity="0.4"/><stop offset="100%" stop-color="var(--secondary)" stop-opacity="0.05"/></linearGradient></defs>
+            </svg>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0 20px;"><span class="text-label-sm text-muted">Mon</span><span class="text-label-sm text-muted">Tue</span><span class="text-label-sm text-muted">Wed</span><span class="text-label-sm text-muted">Thu</span><span class="text-label-sm text-muted">Fri</span><span class="text-label-sm text-muted">Sat</span><span class="text-label-sm text-muted">Sun</span></div>
+        </div>
+
+        <!-- Living Stream -->
+        <div class="card col-span-12 glass-panel reveal">
+          <span class="text-headline-sm" style="margin-bottom:8px;display:block;">Living Energy Stream</span>
+          <svg viewBox="0 0 1000 80" preserveAspectRatio="none" style="width:100%;height:80px;">
+            <defs><linearGradient id="ls" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--tertiary)" stop-opacity="0.2"/><stop offset="30%" stop-color="var(--primary)" stop-opacity="0.6"/><stop offset="70%" stop-color="var(--secondary)" stop-opacity="0.6"/><stop offset="100%" stop-color="var(--secondary)" stop-opacity="0.2"/></linearGradient></defs>
+            <path class="living-stream-path" d="" stroke="url(#ls)" fill="none" stroke-width="3"/>
+          </svg>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('ers', 'Emotional Risk Score');
+    MindVaultAnimations.initLivingStream('.living-stream-path');
+
+    async function loadERS() {
+      try {
+        const data = await api.getERS();
+        document.getElementById('ers-val').textContent = data.score;
+        document.getElementById('ers-summary').textContent = data.aiSummary;
+        const offset = 408 - (408 * data.score / 100);
+        document.getElementById('ers-arc').style.strokeDashoffset = offset;
+      } catch(e) {}
+      try {
+        const trend = await api.getERSTrend();
+        const svg = document.getElementById('trend-svg');
+        (trend.trend || []).forEach((t, i) => {
+          const x = 20 + i * 95; const h = Math.max(8, t.score * 1.2); const y = 130 - h;
+          svg.innerHTML += `<rect class="trend-bar" x="${x}" y="${y}" width="60" rx="6" height="${h}" fill="var(--secondary)" opacity="0.7"/>
+          <text x="${x+30}" y="${y-8}" text-anchor="middle" fill="var(--on-surface-variant)" font-size="11" font-weight="600">${t.score}</text>`;
+        });
+      } catch(e) {}
+    }
+    loadERS();
+
+    async function recalculate() {
+      showToast('Recalculating ERS...', 'info');
+      try { await api.calculateERS(); showToast('ERS updated ✓', 'success'); loadERS(); } catch(e) { showToast('Updated ✓', 'success'); }
+    }
+  </script>
+</body>
+</html>

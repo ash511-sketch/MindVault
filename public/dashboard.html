@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard | MindVault Kids</title>
+  <meta name="description" content="MindVault Kids Dashboard — your safety overview, emotional risk score, and AI Guardian status." />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <style>
+    .hero-greeting { display:flex; align-items:center; justify-content:space-between; padding:28px 32px; border-radius:var(--radius-xl); background:var(--surface-container-lowest); border:2px solid var(--primary-fixed); box-shadow:var(--shadow-float); margin-bottom:var(--space-lg); overflow:hidden; position:relative; }
+    [data-theme="dark"] .hero-greeting { background:var(--glass-bg); backdrop-filter:blur(24px); border:1px solid var(--glass-border); }
+    .hero-mascot { width:140px; height:140px; cursor:pointer; transition:transform 0.3s; animation:float 5s ease-in-out infinite; }
+    .hero-mascot:hover { transform:scale(1.08); }
+    .hero-mascot img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 8px 24px rgba(70,72,212,0.2)); }
+    .ers-ring { width:160px; height:160px; position:relative; }
+    .ers-ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+    .ers-ring .track { fill:none; stroke:var(--surface-container-high); stroke-width:10; }
+    .ers-ring .fill { fill:none; stroke:var(--secondary); stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1.5s var(--ease-out); filter:drop-shadow(0 0 8px rgba(79,219,200,0.5)); }
+    .ers-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .ers-score { font-size:36px; font-weight:800; }
+    .ers-label { font-size:12px; font-weight:600; color:var(--secondary); text-transform:uppercase; letter-spacing:0.05em; }
+    .living-stream-container { width:100%; height:60px; margin-top:8px; }
+    .living-stream-container svg { width:100%; height:100%; }
+    .guardian-quote { font-style:italic; color:var(--on-surface-variant); font-size:15px; line-height:1.6; }
+    .streak-days { display:flex; gap:8px; margin-top:12px; }
+    .streak-day { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; }
+    .streak-day.done { background:var(--accent-pink); }
+    .streak-day.today { background:var(--accent-pink); box-shadow:0 0 12px rgba(249,139,169,0.4); outline:3px solid rgba(249,139,169,0.2); outline-offset:2px; }
+    .streak-day.pending { background:var(--surface-container-high); color:var(--outline); }
+    .mood-emojis { display:flex; gap:12px; margin-top:auto; }
+    .mentor-card { display:flex; flex-direction:column; gap:16px; }
+    .mentor-bubble { background:var(--surface-container-low); padding:20px; border-radius:var(--radius-lg); border-bottom-left-radius:4px; font-size:16px; line-height:1.6; }
+    [data-theme="dark"] .mentor-bubble { background:var(--surface-container-high); }
+    .mentor-actions { display:flex; gap:12px; }
+    .vault-ring { width:80px; height:80px; border:6px solid var(--accent-green); border-top-color:transparent; border-right-color:transparent; border-radius:50%; display:flex; align-items:center; justify-content:center; transform:rotate(-45deg); }
+    .vault-ring .material-symbols-outlined { transform:rotate(45deg); font-size:32px; color:var(--accent-green); }
+    .scan-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--surface-container-high); }
+    .scan-row:last-child { border-bottom:none; }
+    .scan-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .scan-dot.safe { background:var(--accent-green); box-shadow:0 0 8px rgba(183,201,106,0.4); }
+    .scan-dot.flagged { background:var(--accent-orange); box-shadow:0 0 8px rgba(255,143,69,0.4); }
+    .panic-btn-container { display:flex; align-items:center; justify-content:center; }
+    .panic-btn { width:120px; height:120px; border-radius:50%; border:none; background:linear-gradient(135deg, var(--tertiary), var(--tertiary-container)); color:#fff; font-size:14px; font-weight:700; cursor:pointer; position:relative; transition:all 0.3s; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; }
+    .panic-btn:hover { transform:scale(1.08); }
+    .panic-btn .material-symbols-outlined { font-size:32px; }
+    .encourage-card { background:var(--accent-yellow); color:#3d2e00; padding:24px; border-radius:var(--radius-lg); position:relative; overflow:hidden; }
+    .encourage-card::before { content:''; position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(255,255,255,0.2); border-radius:50%; filter:blur(20px); }
+    @media(max-width:1024px) { .hero-greeting { flex-direction:column; text-align:center; gap:16px; } .hero-mascot { width:100px; height:100px; } }
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content" id="main-content">
+      <!-- Hero Greeting -->
+      <div class="hero-greeting reveal">
+        <div>
+          <h1 class="text-display text-gradient" id="greeting-name">Hi Aanya!</h1>
+          <p class="text-body-lg text-muted" style="margin-top:4px;">I'm so glad you're here today.</p>
+        </div>
+        <div class="hero-mascot" id="hero-mascot" onclick="mascotBounce()">
+          <img src="/assets/guardian.png" alt="AI Guardian" class="ai-guardian-3d" />
+        </div>
+      </div>
+
+      <!-- Bento Grid -->
+      <div class="bento-grid">
+
+        <!-- ERS Card (8 col) -->
+        <div class="card col-span-8 glass-panel reveal" style="display:flex;gap:24px;align-items:center;">
+          <div class="ers-ring" id="ers-ring">
+            <svg viewBox="0 0 120 120">
+              <circle class="track" cx="60" cy="60" r="50" />
+              <circle class="fill" cx="60" cy="60" r="50" stroke-dasharray="314" stroke-dashoffset="276" id="ers-arc" />
+            </svg>
+            <div class="ers-center">
+              <span class="ers-score text-secondary" id="ers-value">12%</span>
+              <span class="ers-label">Secure</span>
+            </div>
+          </div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span class="material-symbols-outlined text-secondary filled">favorite</span>
+              <span class="text-headline-sm">Emotional Risk Score</span>
+            </div>
+            <p class="text-body-sm text-muted">Your emotional environment is secure and stable.</p>
+            <div class="living-stream-container">
+              <svg viewBox="0 0 1000 60" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="stream-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="var(--secondary)" stop-opacity="0.1" />
+                    <stop offset="50%" stop-color="var(--primary)" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="var(--secondary)" stop-opacity="0.1" />
+                  </linearGradient>
+                </defs>
+                <path class="living-stream-path" d="" stroke="url(#stream-grad)" fill="none" stroke-width="2" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vault Status (4 col) -->
+        <div class="card col-span-4 glass-panel reveal flex flex-col items-center justify-center gap-md text-center" style="padding-top:32px;">
+          <div style="width:100%;height:4px;background:var(--accent-green);border-radius:4px;position:absolute;top:0;left:0;"></div>
+          <div class="vault-ring">
+            <span class="material-symbols-outlined filled">verified_user</span>
+          </div>
+          <span class="text-headline-sm">Vault Status</span>
+          <span class="badge badge-safe" id="vault-badge">Safe Environment</span>
+        </div>
+
+        <!-- AI Mentor Card (8 col) -->
+        <div class="card col-span-8 glass-panel reveal mentor-card">
+          <div class="flex items-center gap-sm" style="color:var(--secondary);">
+            <span class="material-symbols-outlined">chat_bubble</span>
+            <span class="text-headline-sm">Your Mentor</span>
+          </div>
+          <div class="mentor-bubble" id="mentor-message">
+            I noticed you had a busy day. Want to try a 3-minute breathing exercise?
+          </div>
+          <div class="mentor-actions">
+            <button class="btn btn-primary" onclick="acceptMentor()" style="flex:1;">Yes, let's do it!</button>
+            <button class="btn btn-secondary" onclick="declineMentor()" style="flex:1;">Not now</button>
+          </div>
+        </div>
+
+        <!-- Encouragement (4 col) -->
+        <div class="col-span-4 encourage-card reveal">
+          <span class="material-symbols-outlined" style="font-size:28px;margin-bottom:12px;opacity:0.8;">auto_awesome</span>
+          <p class="text-headline-sm" id="quote-text">"You are braver than you believe, stronger than you seem."</p>
+        </div>
+
+        <!-- Safety Streak (4 col) -->
+        <div class="card col-span-4 glass-panel reveal flex flex-col gap-md">
+          <div class="flex justify-between items-center">
+            <span class="text-headline-sm">Safety Streak</span>
+            <span class="material-symbols-outlined filled" style="color:var(--accent-pink);">local_fire_department</span>
+          </div>
+          <div class="flex items-center gap-sm">
+            <span style="font-size:48px;font-weight:800;color:var(--accent-pink);" id="streak-count">12</span>
+            <span class="text-body-lg text-muted">Days</span>
+          </div>
+          <div class="streak-days" id="streak-days">
+            <div class="streak-day done">M</div>
+            <div class="streak-day done">T</div>
+            <div class="streak-day done">W</div>
+            <div class="streak-day done">T</div>
+            <div class="streak-day today">F</div>
+            <div class="streak-day pending">S</div>
+            <div class="streak-day pending">S</div>
+          </div>
+        </div>
+
+        <!-- Quick Mood (4 col) -->
+        <div class="card col-span-4 glass-panel reveal flex flex-col gap-md">
+          <span class="text-headline-sm">Quick Mood Log</span>
+          <p class="text-body-sm text-muted">How are you feeling right now?</p>
+          <div class="mood-emojis">
+            <button class="mood-btn" onclick="logMood('great', this)" title="Great">😄</button>
+            <button class="mood-btn" onclick="logMood('okay', this)" title="Okay">😐</button>
+            <button class="mood-btn" onclick="logMood('rough', this)" title="Rough">😔</button>
+            <button class="mood-btn" onclick="logMood('anxious', this)" title="Anxious">😰</button>
+          </div>
+        </div>
+
+        <!-- Panic Shield Quick Access (4 col) -->
+        <div class="card col-span-4 glass-panel reveal flex flex-col items-center justify-center gap-md panic-glow" style="border-color:rgba(185,5,56,0.2);">
+          <div class="panic-btn-container">
+            <a href="/panic-shield.html" class="panic-btn magnetic">
+              <span class="material-symbols-outlined filled">shield</span>
+              <span>Panic Shield</span>
+            </a>
+          </div>
+          <p class="text-label-sm text-muted text-center">Tap in emergencies</p>
+        </div>
+
+        <!-- Recent Scans (8 col) -->
+        <div class="card col-span-8 glass-panel reveal">
+          <div class="flex items-center justify-between" style="margin-bottom:16px;">
+            <div class="flex items-center gap-sm">
+              <span class="material-symbols-outlined text-primary">radar</span>
+              <span class="text-headline-sm">Recent Scans</span>
+            </div>
+            <span class="badge badge-info" id="scan-time">Last scan: 2 min ago</span>
+          </div>
+          <div id="scan-list">
+            <div class="scan-row"><div class="scan-dot safe"></div><div><span class="text-label-lg">Discord</span><br/><span class="text-body-sm text-muted">Chat analyzed: Context safe. No coercion.</span></div><span class="text-label-sm text-muted">2m ago</span></div>
+            <div class="scan-row"><div class="scan-dot safe"></div><div><span class="text-label-lg">Instagram</span><br/><span class="text-body-sm text-muted">DMs scanned. No manipulation patterns.</span></div><span class="text-label-sm text-muted">1h ago</span></div>
+            <div class="scan-row"><div class="scan-dot safe"></div><div><span class="text-label-lg">WhatsApp</span><br/><span class="text-body-sm text-muted">Group chats safe. No flagged content.</span></div><span class="text-label-sm text-muted">2h ago</span></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('dashboard', 'Dashboard');
+
+    // Mascot bounce
+    function mascotBounce() {
+      const m = document.getElementById('hero-mascot');
+      m.style.transform = 'scale(1.15)';
+      setTimeout(() => m.style.transform = '', 300);
+      showToast('I\'m always watching out for you! 🛡️', 'info');
+    }
+
+    // Mood log
+    function logMood(mood, btn) {
+      document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      showToast(`Mood logged: ${mood} ✓`, 'success');
+      api.logMood(mood).catch(() => {});
+    }
+
+    // Mentor actions
+    function acceptMentor() {
+      showToast('Starting breathing exercise...', 'success');
+      setTimeout(() => window.location.href = '/ai-first-aid.html', 1000);
+    }
+    function declineMentor() {
+      document.getElementById('mentor-message').textContent = "No worries! I'm here whenever you're ready. 💙";
+      showToast('Maybe next time!', 'info');
+    }
+
+    // Init living stream
+    MindVaultAnimations.initLivingStream('.living-stream-path');
+
+    // Load dashboard data
+    async function loadDashboard() {
+      try {
+        const data = await api.getDashboardOverview();
+        if (data.user) document.getElementById('greeting-name').textContent = `Hi ${data.user.displayName}!`;
+        if (data.ers) {
+          document.getElementById('ers-value').textContent = data.ers.score + '%';
+          const offset = 314 - (314 * data.ers.score / 100);
+          document.getElementById('ers-arc').style.strokeDashoffset = offset;
+        }
+        if (data.safetyStreak) document.getElementById('streak-count').textContent = data.safetyStreak.days;
+        if (data.encouragement) document.getElementById('quote-text').textContent = data.encouragement;
+      } catch(e) { console.log('Using demo data'); }
+    }
+    loadDashboard();
+  </script>
+</body>
+</html>

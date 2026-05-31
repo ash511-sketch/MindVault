@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Heal Mode | MindVault Kids</title>
+  <meta name="description" content="Heal Mode — your recovery sanctuary with mood tracking, journaling, and resilience badges."/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .heal-hero { text-align:center; padding:24px 0 16px; }
+    .heal-hero h1 { font-size:32px; font-weight:700; margin-bottom:8px; }
+    .heal-hero p { font-size:16px; color:var(--on-surface-variant); }
+    .mood-tracker { display:flex; flex-direction:column; align-items:center; gap:16px; }
+    .mood-faces { display:flex; gap:16px; }
+    .mood-face { width:64px; height:64px; border-radius:50%; border:3px solid var(--surface-container-high); display:flex; align-items:center; justify-content:center; font-size:28px; cursor:pointer; transition:all 0.3s var(--ease-spring); background:var(--surface-container-low); }
+    .mood-face:hover { transform:scale(1.12); border-color:var(--primary); }
+    .mood-face.selected { border-color:var(--secondary); background:var(--secondary-container); transform:scale(1.15); box-shadow:0 0 20px rgba(79,219,200,0.3); }
+    .timeline-container { position:relative; padding:24px 0; }
+    .timeline-track { height:6px; background:var(--surface-container-high); border-radius:var(--radius-full); position:relative; margin:24px 0; }
+    .timeline-fill { height:100%; border-radius:var(--radius-full); background:linear-gradient(90deg, var(--tertiary), var(--primary), var(--secondary)); box-shadow:0 0 12px rgba(79,219,200,0.4); position:relative; transition:width 1.5s var(--ease-out); }
+    .timeline-fill::after { content:''; position:absolute; right:-6px; top:-3px; width:12px; height:12px; background:#fff; border-radius:50%; box-shadow:0 0 8px rgba(255,255,255,0.8); }
+    .timeline-nodes { display:flex; justify-content:space-between; margin-top:16px; flex-wrap:wrap; gap:8px; }
+    .timeline-node { display:flex; flex-direction:column; align-items:center; gap:4px; }
+    .timeline-dot { width:16px; height:16px; border-radius:50%; transition:all 0.3s; }
+    .timeline-dot.completed { box-shadow:0 0 8px currentColor; }
+    .timeline-dot.pending { background:var(--surface-container-high); opacity:0.5; }
+    .timeline-label { font-size:10px; color:var(--on-surface-variant); max-width:80px; text-align:center; }
+    .journal-card { position:relative; }
+    .journal-content { min-height:100px; padding:16px; border-radius:var(--radius-md); background:var(--surface-container-low); font-size:14px; line-height:1.6; color:var(--on-surface); }
+    [data-theme="dark"] .journal-content { background:var(--surface-container-high); }
+    .journal-edit { position:absolute; top:16px; right:16px; cursor:pointer; color:var(--primary); }
+    .journal-edit:hover { transform:scale(1.1); }
+    .badge-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:16px; }
+    .badge-item { display:flex; flex-direction:column; align-items:center; gap:8px; padding:20px 12px; border-radius:var(--radius-lg); text-align:center; transition:all 0.3s; border:2px solid var(--surface-container-high); }
+    .badge-item.earned { border-color:var(--secondary); background:rgba(79,219,200,0.05); }
+    .badge-item.locked { opacity:0.5; filter:grayscale(0.5); }
+    .badge-icon { width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--surface-container); }
+    .badge-item.earned .badge-icon { background:var(--secondary-container); }
+    .badge-item.earned .badge-icon .material-symbols-outlined { color:var(--secondary); }
+    .badge-name { font-size:13px; font-weight:700; }
+    .badge-desc { font-size:11px; color:var(--on-surface-variant); }
+    .chat-mini { max-height:200px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:var(--radius-md); background:var(--surface-container-low); }
+    [data-theme="dark"] .chat-mini { background:var(--surface-container); }
+    .day-counter { display:inline-flex; align-items:center; gap:8px; padding:6px 16px; border-radius:var(--radius-full); background:var(--primary-fixed); color:var(--primary); font-weight:700; font-size:13px; }
+    [data-theme="dark"] .day-counter { background:rgba(192,193,255,0.1); color:var(--primary); }
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="aurora-bg"></div>
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="heal-hero reveal">
+        <span class="material-symbols-outlined filled animate-breathe" style="font-size:48px;color:var(--secondary);display:block;margin-bottom:12px;">healing</span>
+        <h1 class="text-gradient animate-breathe">Healing Takes Time. You Are Safe Here.</h1>
+        <p>This is your sanctuary. Take it one breath at a time.</p>
+        <div class="day-counter" style="margin-top:16px;" id="day-counter">
+          <span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span>
+          Day 12
+        </div>
+      </div>
+
+      <div class="bento-grid">
+        <!-- Mood Tracker (6 col) -->
+        <div class="card col-span-6 glass-panel reveal">
+          <div class="flex items-center gap-sm" style="margin-bottom:16px;">
+            <span class="material-symbols-outlined text-accent-pink filled">mood</span>
+            <span class="text-headline-sm">How Are You Feeling?</span>
+          </div>
+          <div class="mood-tracker">
+            <div class="mood-faces">
+              <button class="mood-face" onclick="selectMood('rough', this)" title="Rough">😔</button>
+              <button class="mood-face" onclick="selectMood('okay', this)" title="Okay">😐</button>
+              <button class="mood-face" onclick="selectMood('better', this)" title="Better">😊</button>
+            </div>
+            <p class="text-body-sm text-muted" id="mood-status">Tap how you feel today</p>
+          </div>
+        </div>
+
+        <!-- Recovery Timeline (6 col) -->
+        <div class="card col-span-6 glass-panel reveal">
+          <div class="flex items-center gap-sm" style="margin-bottom:8px;">
+            <span class="material-symbols-outlined text-secondary filled">timeline</span>
+            <span class="text-headline-sm">Recovery Flow</span>
+          </div>
+          <div class="timeline-container">
+            <div class="timeline-track">
+              <div class="timeline-fill" id="timeline-fill" style="width:60%;"></div>
+            </div>
+            <div class="timeline-nodes" id="timeline-nodes"></div>
+          </div>
+        </div>
+
+        <!-- AI Chat Mini (8 col) -->
+        <div class="card col-span-8 glass-panel reveal">
+          <div class="flex items-center gap-sm" style="margin-bottom:12px;">
+            <span class="material-symbols-outlined text-primary filled">psychology</span>
+            <span class="text-headline-sm">Emotional First Aid</span>
+            <a href="/ai-first-aid.html" class="text-label-sm text-primary" style="margin-left:auto;">Open Full Chat →</a>
+          </div>
+          <div class="chat-mini" id="chat-mini">
+            <div class="chat-bubble chat-bubble-ai" style="opacity:1;">Hi there! I'm your AI companion. How are you feeling today? 💙</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <input class="input-field" id="chat-input" placeholder="Type how you're feeling..." style="padding-left:16px;" onkeydown="if(event.key==='Enter')sendMiniChat()"/>
+            <button class="btn btn-primary" onclick="sendMiniChat()" style="flex-shrink:0;">
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Daily Journal (4 col) -->
+        <div class="card col-span-4 glass-panel reveal journal-card">
+          <div class="flex items-center gap-sm" style="margin-bottom:12px;">
+            <span class="material-symbols-outlined text-accent-yellow filled">edit_note</span>
+            <span class="text-headline-sm">Daily Journal</span>
+          </div>
+          <span class="material-symbols-outlined journal-edit" onclick="editJournal()">edit</span>
+          <div class="journal-content" id="journal-content">
+            Today I felt stronger. I talked to Mom about what happened and she made me feel safe. The breathing exercises really helped.
+          </div>
+          <span class="text-label-sm text-muted" style="margin-top:8px;display:block;">Last entry: Yesterday</span>
+        </div>
+
+        <!-- Badges (12 col) -->
+        <div class="card col-span-12 glass-panel reveal">
+          <div class="flex items-center gap-sm" style="margin-bottom:16px;">
+            <span class="material-symbols-outlined text-accent-orange filled">emoji_events</span>
+            <span class="text-headline-sm">Cyber Resilience Badges</span>
+          </div>
+          <div class="badge-grid" id="badge-grid"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('heal-mode', 'Heal Mode');
+
+    async function selectMood(mood, btn) {
+      document.querySelectorAll('.mood-face').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const labels = { rough: "I'm sorry you're having a tough time. Remember, it's okay to feel this way. 💙", okay: "Glad you're okay. Every day is a step forward! 🌟", better: "That's wonderful to hear! You're getting stronger! 💪" };
+      document.getElementById('mood-status').textContent = labels[mood];
+      showToast('Mood logged ✓', 'success');
+      try { await api.logMood(mood); } catch(e){}
+    }
+
+    function editJournal() {
+      const el = document.getElementById('journal-content');
+      if (el.contentEditable === 'true') {
+        el.contentEditable = 'false';
+        el.style.border = 'none';
+        showToast('Journal saved ✓', 'success');
+        api.createJournal(el.textContent).catch(() => {});
+      } else {
+        el.contentEditable = 'true';
+        el.style.border = '2px solid var(--primary)';
+        el.focus();
+      }
+    }
+
+    async function sendMiniChat() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg) return;
+      const chat = document.getElementById('chat-mini');
+      chat.innerHTML += `<div class="chat-bubble chat-bubble-user" style="opacity:1;">${msg}</div>`;
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+      try {
+        const data = await api.sendChat(msg, 'heal-session');
+        chat.innerHTML += `<div class="chat-bubble chat-bubble-ai" style="opacity:1;">${data.response}</div>`;
+      } catch(e) {
+        chat.innerHTML += `<div class="chat-bubble chat-bubble-ai" style="opacity:1;">I hear you. Your feelings are valid. Take a deep breath with me — in for 4, hold for 4, out for 4. 💙</div>`;
+      }
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // Load timeline
+    async function loadTimeline() {
+      try {
+        const data = await api.getRecoveryTimeline();
+        const nodes = document.getElementById('timeline-nodes');
+        const progress = data.currentDay / (data.milestones?.[data.milestones.length-1]?.day || 30) * 100;
+        document.getElementById('timeline-fill').style.width = Math.min(progress, 100) + '%';
+        document.getElementById('day-counter').innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">calendar_today</span> Day ${data.currentDay}`;
+        (data.milestones || []).forEach(m => {
+          nodes.innerHTML += `<div class="timeline-node"><div class="timeline-dot ${m.completed ? 'completed' : 'pending'}" style="background:${m.completed ? m.color : ''};"></div><span class="timeline-label">${m.event}</span></div>`;
+        });
+      } catch(e) {}
+    }
+
+    // Load badges
+    async function loadBadges() {
+      try {
+        const badges = await api.getBadges();
+        const grid = document.getElementById('badge-grid');
+        (badges || []).forEach(b => {
+          grid.innerHTML += `<div class="badge-item ${b.earned ? 'earned' : 'locked'}"><div class="badge-icon"><span class="material-symbols-outlined ${b.earned ? 'filled' : ''}">${b.icon}</span></div><span class="badge-name">${b.name}</span><span class="badge-desc">${b.description}</span>${b.earned ? '<span class="badge badge-safe" style="margin-top:4px;">✓ Earned</span>' : '<span class="badge badge-info" style="margin-top:4px;">🔒 Locked</span>'}</div>`;
+        });
+      } catch(e) {}
+    }
+
+    loadTimeline();
+    loadBadges();
+  </script>
+</body>
+</html>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login | MindVault Kids</title>
+  <meta name="description" content="Sign in to MindVault Kids — AI-powered emotional cyber safety for children and teenagers." />
+  <link rel="stylesheet" href="/css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <style>
+    .login-wrapper {
+      display: flex;
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .login-container {
+      display: flex;
+      max-width: 1100px;
+      width: 100%;
+      gap: 48px;
+      align-items: center;
+    }
+    .login-left {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 24px;
+    }
+    .mascot-container {
+      position: relative;
+      width: 320px;
+      height: 320px;
+    }
+    .mascot-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 16px 40px rgba(70, 72, 212, 0.2));
+      animation: float 5s ease-in-out infinite;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .mascot-img:hover { transform: scale(1.05); }
+    .speech-bubble {
+      position: absolute;
+      top: -16px;
+      right: -80px;
+      background: var(--surface-container-lowest);
+      border: 2px solid var(--primary-container);
+      border-radius: var(--radius-lg);
+      padding: 12px 16px;
+      max-width: 180px;
+      box-shadow: var(--shadow-soft);
+      animation: float 5s ease-in-out infinite;
+      animation-delay: 0.5s;
+    }
+    [data-theme="dark"] .speech-bubble {
+      background: var(--surface-container-high);
+      border-color: rgba(192, 193, 255, 0.3);
+    }
+    .speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 20px;
+      width: 16px;
+      height: 16px;
+      background: var(--surface-container-lowest);
+      border-right: 2px solid var(--primary-container);
+      border-bottom: 2px solid var(--primary-container);
+      transform: rotate(45deg);
+    }
+    [data-theme="dark"] .speech-bubble::after {
+      background: var(--surface-container-high);
+      border-color: rgba(192, 193, 255, 0.3);
+    }
+    .login-form-panel {
+      flex: 1;
+      max-width: 480px;
+      background: var(--surface-container-lowest);
+      border: 2px solid var(--surface-container-high);
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      box-shadow: var(--shadow-float);
+      position: relative;
+      overflow: hidden;
+    }
+    [data-theme="dark"] .login-form-panel {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+    }
+    .role-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .role-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 8px;
+      border: 2px solid var(--surface-container-high);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.3s var(--ease-spring);
+      background: transparent;
+      color: var(--on-surface-variant);
+    }
+    .role-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+    .role-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-fixed);
+      color: var(--primary);
+      transform: scale(1.03);
+    }
+    [data-theme="dark"] .role-card.selected {
+      background: rgba(192, 193, 255, 0.1);
+      border-color: var(--primary);
+    }
+    .role-card .material-symbols-outlined {
+      font-size: 32px;
+      transition: transform 0.3s;
+    }
+    .role-card:hover .material-symbols-outlined { transform: scale(1.15); }
+    .brand-title {
+      font-size: 40px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+    .brand-subtitle {
+      font-size: 18px;
+      color: var(--on-surface-variant);
+      max-width: 340px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--on-surface-variant);
+      padding-left: 4px;
+    }
+    .login-link {
+      font-size: 12px;
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .login-link:hover { text-decoration: underline; }
+    .divider {
+      border-top: 1px solid var(--surface-container-high);
+      margin: 24px 0;
+    }
+    @media (max-width: 768px) {
+      .login-container { flex-direction: column; gap: 32px; }
+      .login-left { order: -1; }
+      .mascot-container { width: 200px; height: 200px; }
+      .speech-bubble { right: -40px; max-width: 140px; font-size: 12px; }
+      .brand-title { font-size: 28px; }
+    }
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="ambient-bg" id="ambient-bg">
+    <div class="ambient-glow ambient-glow-1"></div>
+    <div class="ambient-glow ambient-glow-2"></div>
+    <div class="ambient-glow ambient-glow-3"></div>
+  </div>
+
+  <!-- Theme Toggle (floating) -->
+  <button class="theme-toggle" onclick="ThemeManager.toggle()" style="position:fixed;top:24px;right:24px;z-index:100;">
+    <span class="material-symbols-outlined" id="theme-icon">dark_mode</span>
+  </button>
+
+  <main class="login-wrapper">
+    <div class="login-container">
+      <!-- Left: Mascot & Welcome -->
+      <div class="login-left">
+        <div class="mascot-container">
+          <img src="/assets/guardian.png" alt="AI Guardian Robot Mascot" class="mascot-img ai-guardian-3d" id="mascot" />
+          <div class="speech-bubble">
+            <p class="text-label-lg text-primary">I'm so glad you're here! 🛡️</p>
+          </div>
+        </div>
+        <h1 class="brand-title text-gradient">MindVault Kids</h1>
+        <p class="brand-subtitle">Your safe, playful space for big feelings and brave thoughts.</p>
+      </div>
+
+      <!-- Right: Login Form -->
+      <div class="login-form-panel glass-panel" id="login-panel">
+        <div class="text-center" style="margin-bottom:28px;">
+          <h2 class="text-headline-lg">Welcome Back!</h2>
+          <p class="text-body-md text-muted" style="margin-top:4px;">Let's continue your adventure.</p>
+        </div>
+
+        <!-- Role Selection -->
+        <div class="role-cards" id="role-cards">
+          <button class="role-card selected" data-role="child" onclick="selectRole(this)">
+            <span class="material-symbols-outlined">rocket_launch</span>
+            <span class="text-label-lg">Child / Teen</span>
+          </button>
+          <button class="role-card" data-role="parent" onclick="selectRole(this)">
+            <span class="material-symbols-outlined">shield_person</span>
+            <span class="text-label-lg">Parent</span>
+          </button>
+          <button class="role-card" data-role="teacher" onclick="selectRole(this)">
+            <span class="material-symbols-outlined">school</span>
+            <span class="text-label-lg">Teacher</span>
+          </button>
+          <button class="role-card" data-role="counselor" onclick="selectRole(this)">
+            <span class="material-symbols-outlined">psychology</span>
+            <span class="text-label-lg">Counselor</span>
+          </button>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="email">Username or Email</label>
+            <div class="input-wrapper">
+              <span class="material-symbols-outlined input-icon">person</span>
+              <input class="input-field" id="email" type="text" placeholder="SuperHero_Aanya" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;padding:0 4px;">
+              <label for="password" style="margin:0;">Password</label>
+              <span class="login-link" onclick="handleForgot()">Forgot?</span>
+            </div>
+            <div class="input-wrapper">
+              <span class="material-symbols-outlined input-icon">lock</span>
+              <input class="input-field" id="password" type="password" placeholder="••••••••" required />
+              <button type="button" class="icon-btn" onclick="togglePassword()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);">
+                <span class="material-symbols-outlined" id="pass-toggle-icon">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px;padding:0 4px;">
+            <input type="checkbox" id="remember" style="width:18px;height:18px;accent-color:var(--primary);cursor:pointer;" />
+            <label for="remember" class="text-body-sm text-muted" style="cursor:pointer;">Keep me logged in</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full" style="padding:18px;font-size:16px;font-weight:700;position:relative;" id="login-btn">
+            <span>Let's Go!</span>
+            <span class="material-symbols-outlined">arrow_forward</span>
+            <div class="shimmer"></div>
+          </button>
+        </form>
+
+        <div class="divider"></div>
+        <p class="text-center text-body-md text-muted">
+          New to the vault? <a href="/signup.html" class="login-link" style="font-size:inherit;">Create an Account</a>
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <!-- Firebase Client SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+    import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDi0Xh44ipAgL-RQdebsB2_7kpqSdtEVM0",
+      authDomain: "mindvault-kids-2026.firebaseapp.com",
+      projectId: "mindvault-kids-2026",
+      storageBucket: "mindvault-kids-2026.firebasestorage.app",
+      appId: "1:162195503248:web:720b80568e41a066618015"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    let selectedRole = 'child';
+
+    // Init theme (no nav on login)
+    ThemeManager.init();
+
+    // If already logged in, redirect
+    if (localStorage.getItem('mv-token')) {
+      window.location.href = '/dashboard.html';
+    }
+
+    window.selectRole = function(el) {
+      document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedRole = el.dataset.role;
+    };
+
+    window.togglePassword = function() {
+      const input = document.getElementById('password');
+      const icon = document.getElementById('pass-toggle-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    };
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const btn = document.getElementById('login-btn');
+
+      if (!email || !password) {
+        showToast('Please enter email and password', 'warning');
+        return;
+      }
+
+      btn.innerHTML = '<span class="material-symbols-outlined animate-pulse">hourglass_top</span> Logging in...';
+      btn.disabled = true;
+
+      try {
+        await api.login(email, password);
+        showToast('Welcome back! 🚀', 'success');
+        setTimeout(() => window.location.href = '/dashboard.html', 800);
+      } catch (err) {
+        btn.innerHTML = '<span>Let\'s Go!</span><span class="material-symbols-outlined">arrow_forward</span><div class="shimmer"></div>';
+        btn.disabled = false;
+
+        showToast(err.message || 'Login failed. Please check your credentials.', 'error');
+      }
+    });
+
+    window.handleForgot = function() {
+      const email = document.getElementById('email').value.trim();
+      if (!email) {
+        showToast('Enter your email first, then click Forgot', 'warning');
+        return;
+      }
+      import('https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js').then(({ sendPasswordResetEmail }) => {
+        sendPasswordResetEmail(auth, email).then(() => {
+          showToast('Password reset email sent! Check your inbox.', 'success');
+        }).catch(() => showToast('Could not send reset email. Check the address.', 'error'));
+      });
+    };
+
+    // Robot mascot interactions
+    const mascot = document.getElementById('mascot');
+    const phrases = ["You're safe here! 💙", "Let's be brave together! ✨", "I'm always watching out for you! 🛡️", "Ready for an adventure? 🚀"];
+    let phraseIdx = 0;
+    mascot.addEventListener('click', () => {
+      phraseIdx = (phraseIdx + 1) % phrases.length;
+      document.querySelector('.speech-bubble p').textContent = phrases[phraseIdx];
+    });
+  </script>
+</body>
+</html>

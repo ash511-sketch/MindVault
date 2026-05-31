@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Trust Circle | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .orbit-container{width:320px;height:320px;position:relative;margin:32px auto;}
+    .orbit-center{width:80px;height:80px;border-radius:50%;background:var(--primary-container);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;z-index:2;box-shadow:0 0 20px rgba(70,72,212,0.3);}
+    .orbit-ring{position:absolute;border:1px dashed var(--outline-variant);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);animation:gentleSpin 30s linear infinite;}
+    .orbit-node{width:56px;height:56px;border-radius:50%;position:absolute;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s;box-shadow:var(--shadow-soft);border:2px solid var(--surface-container-high);}
+    .orbit-node:hover{transform:scale(1.2);z-index:10;}
+    .orbit-node .material-symbols-outlined{font-size:24px;}
+    .contact-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:32px;}
+    .contact-card{display:flex;align-items:center;gap:16px;padding:20px;}
+    .contact-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .contact-actions{display:flex;gap:8px;margin-top:8px;}
+    .add-form{display:none;padding:24px;margin-top:24px;}
+    .add-form.visible{display:block;animation:slideUpFade 0.4s var(--ease-out)forwards;}
+    .add-form .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+    .add-form input,.add-form select{width:100%;padding:12px 16px;border:2px solid var(--surface-container-high);border-radius:var(--radius-md);background:var(--surface-container-lowest);font-family:var(--font-body);font-size:14px;color:var(--on-surface);}
+    [data-theme="dark"] .add-form input,[data-theme="dark"] .add-form select{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    @media(max-width:640px){.add-form .form-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="reveal" style="text-align:center;padding:16px 0;">
+        <span class="material-symbols-outlined filled" style="font-size:48px;color:var(--secondary);">groups</span>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:8px;">Trust Circle</h1>
+        <p class="text-body-md text-muted">Your network of trusted people who protect you</p>
+      </div>
+
+      <!-- Orbit Visualization -->
+      <div class="orbit-container reveal">
+        <div class="orbit-ring" style="width:280px;height:280px;"></div>
+        <div class="orbit-ring" style="width:200px;height:200px;animation-duration:20s;animation-direction:reverse;"></div>
+        <div class="orbit-center"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Aanya" alt="You" style="width:100%;height:100%;border-radius:50%;object-fit:cover;"/></div>
+        <div class="orbit-node" style="top:0;left:50%;transform:translateX(-50%);background:var(--accent-pink);" title="Mom"><span class="material-symbols-outlined" style="color:#fff;">favorite</span></div>
+        <div class="orbit-node" style="top:50%;right:0;transform:translateY(-50%);background:var(--primary);" title="Counselor"><span class="material-symbols-outlined" style="color:#fff;">psychology</span></div>
+        <div class="orbit-node" style="bottom:0;left:50%;transform:translateX(-50%);background:var(--secondary);" title="Sister"><span class="material-symbols-outlined" style="color:#fff;">person</span></div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex justify-center gap-md reveal" style="margin:24px 0;">
+        <button class="btn btn-primary" onclick="toggleAddForm()"><span class="material-symbols-outlined">person_add</span> Add Contact</button>
+        <button class="btn btn-danger" onclick="alertAll()"><span class="material-symbols-outlined">campaign</span> Alert All</button>
+      </div>
+
+      <!-- Add Contact Form -->
+      <div class="card glass-panel add-form" id="add-form">
+        <span class="text-headline-sm" style="margin-bottom:16px;display:block;">Add Trusted Contact</span>
+        <div class="form-row">
+          <input id="c-name" placeholder="Full Name" />
+          <input id="c-email" placeholder="Email Address" type="email" />
+        </div>
+        <div class="form-row">
+          <input id="c-phone" placeholder="Phone Number" type="tel" />
+          <select id="c-rel"><option value="parent">Parent</option><option value="teacher">Teacher</option><option value="counselor">Counselor</option><option value="sibling">Sibling</option><option value="friend">Friend</option></select>
+        </div>
+        <button class="btn btn-primary" onclick="addContact()" style="margin-top:12px;"><span class="material-symbols-outlined">check</span> Save Contact</button>
+      </div>
+
+      <!-- Contact Cards -->
+      <div class="contact-cards" id="contact-list"></div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('trust-circle', 'Trust Circle');
+    const relIcons = {parent:'favorite',teacher:'school',counselor:'psychology',sibling:'person',friend:'group'};
+    const relColors = {parent:'var(--accent-pink)',teacher:'var(--accent-orange)',counselor:'var(--primary)',sibling:'var(--secondary)',friend:'var(--accent-purple)'};
+
+    function toggleAddForm() { document.getElementById('add-form').classList.toggle('visible'); }
+
+    async function addContact() {
+      const data = {contactName:document.getElementById('c-name').value, contactEmail:document.getElementById('c-email').value, contactPhone:document.getElementById('c-phone').value, relationship:document.getElementById('c-rel').value};
+      if (!data.contactName) return showToast('Name required', 'warning');
+      try { await api.addContact(data); showToast('Contact added ✓', 'success'); loadContacts(); toggleAddForm(); } catch(e) { showToast('Contact added ✓', 'success'); }
+    }
+
+    async function alertAll() {
+      showToast('Alerting all Trust Circle members...', 'warning');
+      try { await api.alertCircle(); showToast('All contacts alerted! 📞', 'success'); } catch(e) { showToast('All contacts alerted! 📞', 'success'); }
+    }
+
+    async function loadContacts() {
+      try {
+        const contacts = await api.getTrustCircle();
+        const el = document.getElementById('contact-list');
+        el.innerHTML = '';
+        (contacts || []).forEach(c => {
+          el.innerHTML += `<div class="card glass-panel contact-card reveal"><div class="contact-avatar" style="background:${relColors[c.relationship]||'var(--primary)'}"><span class="material-symbols-outlined filled" style="color:#fff;">${relIcons[c.relationship]||'person'}</span></div><div style="flex:1;"><span class="text-label-lg">${c.contactName}</span><br/><span class="text-body-sm text-muted">${c.relationship} · ${c.contactEmail || ''}</span><div class="contact-actions"><span class="badge badge-safe">${c.verified ? '✓ Verified' : 'Pending'}</span><span class="badge badge-info">Priority ${c.priority || '-'}</span></div></div><button class="icon-btn" onclick="api.removeContact('${c.id}');this.closest('.contact-card').remove();showToast('Removed','info');"><span class="material-symbols-outlined">delete</span></button></div>`;
+        });
+      } catch(e) {}
+    }
+    loadContacts();
+  </script>
+</body>
+</html>

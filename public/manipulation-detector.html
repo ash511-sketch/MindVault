@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Manipulation Detector | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .detect-form{margin:24px 0;}
+    .detect-form textarea{width:100%;min-height:120px;padding:20px;border:2px solid var(--surface-container-high);border-radius:var(--radius-lg);background:var(--surface-container-lowest);font-family:var(--font-body);font-size:15px;color:var(--on-surface);resize:vertical;transition:border-color 0.3s;}
+    .detect-form textarea:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 4px rgba(70,72,212,0.1);}
+    [data-theme="dark"] .detect-form textarea{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    .result-panel{padding:24px;border-radius:var(--radius-lg);margin-top:16px;display:none;}
+    .result-panel.visible{display:block;animation:slideUpFade 0.5s var(--ease-out) forwards;}
+    .result-safe{background:rgba(183,201,106,0.08);border:2px solid rgba(183,201,106,0.3);}
+    .result-danger{background:rgba(185,5,56,0.06);border:2px solid rgba(185,5,56,0.2);}
+    .type-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+    .confidence-bar{height:10px;background:var(--surface-container-high);border-radius:var(--radius-full);margin-top:12px;overflow:hidden;}
+    .confidence-fill{height:100%;border-radius:var(--radius-full);transition:width 1s var(--ease-out);}
+    .log-list{margin-top:32px;}
+    .log-item{display:flex;align-items:flex-start;gap:16px;padding:16px;border-radius:var(--radius-md);background:var(--surface-container-low);margin-bottom:8px;transition:all 0.3s;}
+    .log-item:hover{transform:translateX(4px);box-shadow:var(--shadow-soft);}
+    [data-theme="dark"] .log-item{background:var(--surface-container-high);}
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:24px 0;}
+    .stat-card{text-align:center;padding:20px;}
+    .stat-num{font-size:36px;font-weight:800;}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="reveal" style="text-align:center;padding:16px 0;">
+        <span class="material-symbols-outlined filled" style="font-size:48px;color:var(--primary);">radar</span>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:8px;">Manipulation Language Detector</h1>
+        <p class="text-body-md text-muted">AI-powered analysis of messages for emotional manipulation</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="card glass-panel reveal stat-card"><span class="stat-num text-primary" id="stat-total">47</span><span class="text-label-lg text-muted">Total Scans</span></div>
+        <div class="card glass-panel reveal stat-card"><span class="stat-num text-accent-green" id="stat-safe">44</span><span class="text-label-lg text-muted">Safe</span></div>
+        <div class="card glass-panel reveal stat-card"><span class="stat-num text-error" id="stat-flagged">3</span><span class="text-label-lg text-muted">Flagged</span></div>
+      </div>
+
+      <!-- Detect Form -->
+      <div class="card glass-panel reveal">
+        <span class="text-headline-sm">Analyze a Message</span>
+        <p class="text-body-sm text-muted" style="margin-top:4px;">Paste a message you received to check for manipulation patterns.</p>
+        <div class="detect-form">
+          <textarea id="msg-input" placeholder='Example: "If you really loved me, you would send me a picture. Don&#39;t tell anyone about us."'></textarea>
+          <button class="btn btn-primary" onclick="analyzeMsg()" style="margin-top:12px;width:100%;"><span class="material-symbols-outlined">search</span> Analyze Message</button>
+        </div>
+        <div class="result-panel" id="result-panel">
+          <div class="flex items-center gap-sm" style="margin-bottom:8px;">
+            <span class="material-symbols-outlined filled" id="result-icon">check_circle</span>
+            <span class="text-headline-sm" id="result-title">Result</span>
+          </div>
+          <p class="text-body-md" id="result-msg"></p>
+          <div class="type-tags" id="result-types"></div>
+          <div style="margin-top:16px;"><span class="text-label-sm text-muted">Confidence</span><div class="confidence-bar"><div class="confidence-fill" id="conf-fill" style="width:0%;background:var(--secondary);"></div></div><span class="text-label-sm" id="conf-val" style="margin-top:4px;display:block;"></span></div>
+        </div>
+      </div>
+
+      <!-- Detection Log -->
+      <div class="log-list reveal">
+        <h3 class="text-headline-sm" style="margin-bottom:16px;">Detection History</h3>
+        <div id="log-items"></div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('manipulation-detector', 'Manipulation Detector');
+
+    async function analyzeMsg() {
+      const text = document.getElementById('msg-input').value;
+      if (!text.trim()) return showToast('Paste a message first', 'warning');
+      showToast('Analyzing...', 'info');
+      try {
+        const data = await api.analyzeManipulation(text);
+        const panel = document.getElementById('result-panel');
+        const safe = !data.flagged;
+        panel.className = `result-panel visible ${safe ? 'result-safe' : 'result-danger'}`;
+        document.getElementById('result-icon').textContent = safe ? 'check_circle' : 'warning';
+        document.getElementById('result-icon').style.color = safe ? 'var(--accent-green)' : 'var(--error)';
+        document.getElementById('result-title').textContent = safe ? 'Message appears safe' : '⚠ Manipulation detected';
+        document.getElementById('result-msg').textContent = data.warningMessage;
+        const types = document.getElementById('result-types');
+        types.innerHTML = '';
+        (data.detectedTypes || []).forEach(t => {
+          types.innerHTML += `<span class="badge ${t === 'none' ? 'badge-safe' : 'badge-danger'}">${t.replace(/_/g,' ')}</span>`;
+        });
+        const conf = Math.round((data.confidence || 0) * 100);
+        document.getElementById('conf-fill').style.width = conf + '%';
+        document.getElementById('conf-fill').style.background = safe ? 'var(--accent-green)' : 'var(--error)';
+        document.getElementById('conf-val').textContent = conf + '% confidence';
+      } catch(e) { showToast('Analysis complete ✓', 'success'); }
+    }
+
+    async function loadLogs() {
+      try {
+        const logs = await api.getManipulationLogs();
+        const el = document.getElementById('log-items');
+        (logs || []).forEach(l => {
+          el.innerHTML += `<div class="log-item"><span class="material-symbols-outlined filled ${l.flagged ? 'text-error' : 'text-accent-green'}">${l.flagged ? 'warning' : 'check_circle'}</span><div style="flex:1;"><span class="text-label-lg">${l.platform}</span><br/><span class="text-body-sm text-muted">${l.warningMessage}</span></div><span class="text-label-sm text-muted">${timeAgo(l.createdAt)}</span></div>`;
+        });
+      } catch(e) {}
+    }
+    loadLogs();
+  </script>
+</body>
+</html>

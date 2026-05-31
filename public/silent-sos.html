@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Silent SOS | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .sos-center{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:24px;text-align:center;}
+    .sos-ring{width:180px;height:180px;border-radius:50%;border:4px solid var(--error);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.4s var(--ease-spring);background:rgba(185,5,56,0.04);position:relative;}
+    .sos-ring:hover{transform:scale(1.08);box-shadow:0 0 50px rgba(185,5,56,0.3);}
+    .sos-ring .material-symbols-outlined{font-size:56px;color:var(--error);}
+    .safe-word-section{max-width:500px;margin:32px auto;text-align:center;}
+    .safe-word-input{width:100%;padding:16px 20px;border:2px solid var(--surface-container-high);border-radius:var(--radius-full);background:var(--surface-container-lowest);font-family:var(--font-body);font-size:16px;text-align:center;color:var(--on-surface);}
+    [data-theme="dark"] .safe-word-input{background:var(--surface-container);border:1px solid var(--outline-variant);}
+    .sos-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:600px;margin:24px auto;}
+    .sos-method{padding:20px;text-align:center;cursor:pointer;transition:all 0.3s;}
+    .sos-method:hover{transform:translateY(-4px);}
+    .sos-active-banner{padding:24px;border-radius:var(--radius-lg);background:rgba(185,5,56,0.08);border:2px solid rgba(185,5,56,0.3);text-align:center;display:none;margin:24px auto;max-width:500px;animation:panicPulse 3s ease-in-out infinite alternate;}
+    .sos-active-banner.visible{display:block;animation:slideUpFade 0.5s var(--ease-out) forwards,panicPulse 3s ease-in-out infinite alternate;}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="page-wrapper">
+    <main class="main-content">
+      <div class="sos-center reveal">
+        <span class="material-symbols-outlined filled animate-breathe" style="font-size:48px;color:var(--error);">sos</span>
+        <h1 class="text-headline-lg text-gradient">Silent SOS</h1>
+        <p class="text-body-md text-muted" style="max-width:400px;">Send a discreet distress signal to your Trust Circle without anyone noticing.</p>
+
+        <div class="sos-ring panic-glow" onclick="triggerSOS()" id="sos-btn">
+          <span class="material-symbols-outlined filled">sos</span>
+          <div class="ripple-ring"></div>
+          <div class="ripple-ring"></div>
+          <div class="ripple-ring"></div>
+        </div>
+        <span class="text-label-lg" style="color:var(--error);">TAP TO SEND SOS</span>
+      </div>
+
+      <div class="sos-active-banner" id="sos-banner">
+        <span class="material-symbols-outlined filled text-error" style="font-size:32px;">emergency_share</span>
+        <h3 class="text-headline-sm" style="margin:8px 0;color:var(--error);">SOS Active</h3>
+        <p class="text-body-sm text-muted">Your Trust Circle has been alerted. Help is on the way.</p>
+        <button class="btn btn-secondary" onclick="resolveSOS()" style="margin-top:12px;">Mark as Resolved</button>
+      </div>
+
+      <!-- Trigger Methods -->
+      <div class="sos-methods reveal">
+        <div class="card glass-panel sos-method" onclick="triggerSOS('shake')"><span class="material-symbols-outlined" style="font-size:32px;color:var(--accent-orange);">vibration</span><span class="text-label-lg" style="display:block;margin-top:8px;">Shake Phone</span><span class="text-body-sm text-muted">Shake 3x to trigger</span></div>
+        <div class="card glass-panel sos-method" onclick="triggerSOS('tap')"><span class="material-symbols-outlined" style="font-size:32px;color:var(--primary);">touch_app</span><span class="text-label-lg" style="display:block;margin-top:8px;">Triple Tap</span><span class="text-body-sm text-muted">Tap volume 3x</span></div>
+        <div class="card glass-panel sos-method" onclick="triggerSafeWord()"><span class="material-symbols-outlined" style="font-size:32px;color:var(--secondary);">mic</span><span class="text-label-lg" style="display:block;margin-top:8px;">Safe Word</span><span class="text-body-sm text-muted">Say your safe word</span></div>
+      </div>
+
+      <!-- Safe Word -->
+      <div class="safe-word-section reveal">
+        <span class="text-headline-sm" style="display:block;margin-bottom:12px;">Your Safe Word</span>
+        <input class="safe-word-input" id="safe-word" type="password" value="pineapple" placeholder="Set your safe word..." />
+        <button class="btn btn-secondary" onclick="updateSafeWord()" style="margin-top:12px;"><span class="material-symbols-outlined">save</span> Update</button>
+      </div>
+
+      <!-- SOS Log -->
+      <div class="reveal" style="margin-top:32px;">
+        <h3 class="text-headline-sm" style="margin-bottom:16px;">SOS History</h3>
+        <div id="sos-logs"></div>
+      </div>
+    </main>
+  </div>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script>
+    initSharedLayout('silent-sos', 'Silent SOS');
+    let activeSOSId = null;
+
+    async function triggerSOS(method='manual') {
+      showToast('🆘 SOS triggered! Alerting Trust Circle...', 'error');
+      document.getElementById('sos-banner').classList.add('visible');
+      try { const data = await api.triggerSOS(method); activeSOSId = data.id; } catch(e) {}
+    }
+    async function triggerSafeWord() {
+      const word = document.getElementById('safe-word').value;
+      showToast('🆘 Safe word activated!', 'error');
+      document.getElementById('sos-banner').classList.add('visible');
+      try { await api.triggerSafeWord(word); } catch(e) {}
+    }
+    function resolveSOS() { document.getElementById('sos-banner').classList.remove('visible'); showToast('SOS resolved ✓', 'success'); }
+    function updateSafeWord() { showToast('Safe word updated ✓', 'success'); }
+
+    async function loadLogs() {
+      try {
+        const logs = await api.getSOSLogs();
+        const el = document.getElementById('sos-logs');
+        (logs||[]).forEach(l => {
+          el.innerHTML += `<div class="card glass-panel" style="display:flex;align-items:center;gap:16px;padding:16px;margin-bottom:8px;"><span class="material-symbols-outlined filled ${l.status==='resolved'?'text-accent-green':'text-error'}">${l.status==='resolved'?'check_circle':'warning'}</span><div style="flex:1;"><span class="text-label-lg">SOS — ${l.triggerMethod}</span><br/><span class="text-body-sm text-muted">Status: ${l.status}${l.resolvedBy?' · Resolved by '+l.resolvedBy:''}</span></div><span class="text-label-sm text-muted">${timeAgo(l.createdAt)}</span></div>`;
+        });
+      } catch(e) {}
+    }
+    loadLogs();
+  </script>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up | MindVault Kids</title>
+  <link rel="stylesheet" href="/css/styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <style>
+    .signup-wrapper{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px;}
+    .signup-panel{max-width:520px;width:100%;background:var(--surface-container-lowest);border:2px solid var(--surface-container-high);border-radius:var(--radius-xl);padding:40px;box-shadow:var(--shadow-float);}
+    [data-theme="dark"] .signup-panel{background:var(--glass-bg);backdrop-filter:blur(24px);border:1px solid var(--glass-border);}
+    .form-group{margin-bottom:16px;}
+    .form-group label{display:block;margin-bottom:6px;font-size:13px;font-weight:600;color:var(--on-surface-variant);}
+    .role-selection{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:16px 0 24px;}
+    .role-option{padding:14px;border:2px solid var(--surface-container-high);border-radius:var(--radius-md);text-align:center;cursor:pointer;transition:all 0.3s;background:transparent;color:var(--on-surface-variant);font-family:var(--font-body);font-size:14px;}
+    .role-option:hover{border-color:var(--primary);}
+    .role-option.selected{border-color:var(--primary);background:var(--primary-fixed);color:var(--primary);}
+    [data-theme="dark"] .role-option.selected{background:rgba(192,193,255,0.1);}
+  </style>
+</head>
+<body class="mesh-bg">
+  <div class="ambient-bg" id="ambient-bg"><div class="ambient-glow ambient-glow-1"></div><div class="ambient-glow ambient-glow-2"></div><div class="ambient-glow ambient-glow-3"></div></div>
+  <button class="theme-toggle" onclick="ThemeManager.toggle()" style="position:fixed;top:24px;right:24px;z-index:100;"><span class="material-symbols-outlined" id="theme-icon">dark_mode</span></button>
+  <main class="signup-wrapper">
+    <div class="signup-panel glass-panel">
+      <div style="text-align:center;margin-bottom:28px;">
+        <span class="material-symbols-outlined filled" style="font-size:48px;color:var(--primary);">shield</span>
+        <h1 class="text-headline-lg text-gradient" style="margin-top:8px;">Create Your Vault</h1>
+        <p class="text-body-md text-muted">Start your journey to online safety</p>
+      </div>
+      <form onsubmit="handleSignup(event)">
+        <div class="form-group"><label>Display Name</label><div class="input-wrapper"><span class="material-symbols-outlined input-icon">badge</span><input class="input-field" id="s-name" placeholder="SuperHero_Aanya" required/></div></div>
+        <div class="form-group"><label>Email</label><div class="input-wrapper"><span class="material-symbols-outlined input-icon">email</span><input class="input-field" id="s-email" type="email" placeholder="your@email.com" required/></div></div>
+        <div class="form-group"><label>Password</label><div class="input-wrapper"><span class="material-symbols-outlined input-icon">lock</span><input class="input-field" id="s-password" type="password" placeholder="Min 8 characters" required minlength="8"/></div></div>
+        <label class="text-label-lg" style="display:block;margin-bottom:8px;">I am a...</label>
+        <div class="role-selection">
+          <button type="button" class="role-option selected" data-role="teen" onclick="selectRole(this)">🚀 Child / Teen</button>
+          <button type="button" class="role-option" data-role="parent" onclick="selectRole(this)">🛡️ Parent</button>
+          <button type="button" class="role-option" data-role="teacher" onclick="selectRole(this)">📚 Teacher</button>
+          <button type="button" class="role-option" data-role="counselor" onclick="selectRole(this)">🧠 Counselor</button>
+        </div>
+        <button type="submit" class="btn btn-primary w-full" style="padding:18px;font-size:16px;font-weight:700;"><span>Create Account</span><span class="material-symbols-outlined">arrow_forward</span><div class="shimmer"></div></button>
+      </form>
+      <div style="border-top:1px solid var(--surface-container-high);margin:24px 0;"></div>
+      <p class="text-center text-body-md text-muted">Already have a vault? <a href="/login.html" style="font-weight:600;">Log In</a></p>
+    </div>
+  </main>
+  <script src="/js/shared.js"></script>
+  <script src="/js/animations.js"></script>
+  <script src="/js/api.js"></script>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js';
+    import { getAuth, createUserWithEmailAndPassword, updateProfile } from 'https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDi0Xh44ipAgL-RQdebsB2_7kpqSdtEVM0",
+      authDomain: "mindvault-kids-2026.firebaseapp.com",
+      projectId: "mindvault-kids-2026",
+      storageBucket: "mindvault-kids-2026.firebasestorage.app",
+      appId: "1:162195503248:web:720b80568e41a066618015"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    ThemeManager.init();
+    let selectedRole = 'teen';
+
+    window.selectRole = function(el) {
+      document.querySelectorAll('.role-option').forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedRole = el.dataset.role;
+    };
+
+    document.querySelector('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('s-name').value.trim();
+      const email = document.getElementById('s-email').value.trim();
+      const password = document.getElementById('s-password').value;
+      const btn = e.target.querySelector('button[type="submit"]');
+
+      if (!name || !email || !password) {
+        showToast('Please fill in all fields', 'warning');
+        return;
+      }
+      if (password.length < 8) {
+        showToast('Password must be at least 8 characters', 'warning');
+        return;
+      }
+
+      btn.innerHTML = '<span class="material-symbols-outlined animate-pulse">hourglass_top</span> Creating...';
+      btn.disabled = true;
+
+      try {
+        await api.signup(email, password, selectedRole, name);
+        showToast('Account created! Welcome to MindVault! 🚀', 'success');
+        setTimeout(() => window.location.href = '/dashboard.html', 800);
+      } catch (err) {
+        btn.innerHTML = '<span>Create Account</span><span class="material-symbols-outlined">arrow_forward</span><div class="shimmer"></div>';
+        btn.disabled = false;
+        showToast(err.message || 'Signup failed. Please try again.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>
